@@ -19,10 +19,14 @@ class Settings(BaseSettings):
     NEBIUS_BASE_URL: str = "https://api.tokenfactory.nebius.com/v1/"
     
     # NVIDIA Nemotron models hosted on Nebius
-    # Large reasoning model for Replay & Adversarial Challenger
-    NVIDIA_REASONING_MODEL: str = "nvidia/nemotron-4-340b-instruct"
-    # Fast lightweight model for categorization, tagging, routing
-    NVIDIA_FAST_MODEL: str = "nvidia/nemotron-3-nano"
+    # Large reasoning model for Replay & Adversarial Challenger (550B MoE)
+    NVIDIA_REASONING_MODEL: str = "nvidia/Nemotron-3-Ultra-550b-a55b"
+    # Fast lightweight model for categorization, tagging, routing (30B MoE)
+    NVIDIA_FAST_MODEL: str = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"
+    # Multimodal VL model for reels and image understanding
+    NVIDIA_VL_MODEL: str = "nvidia/Nemotron-3.5-Super-VL"
+    # High throughput lightning model
+    NVIDIA_LIGHTNING_MODEL: str = "nvidia/Nemotron-3_5-Lightning"
 
     # Tavily API for autonomous web research
     TAVILY_API_KEY: str = ""
