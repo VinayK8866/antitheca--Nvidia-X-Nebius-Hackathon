@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - NEBIUS_API_KEY=${NEBIUS_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - MORNING_DISPATCH_WEBHOOK=${MORNING_DISPATCH_WEBHOOK:-https://httpbin.org/post}
+      - CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+    volumes:
+      - ./data:/app/data
+      - ./backend/demo_vault:/app/demo_vault
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
