@@ -1,22 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { Send, Plus, Link2, FileText, Sparkles, Brain, CheckCircle, Lightbulb, Clock } from "lucide-react";
+import { useState, useRef } from "react";
+import { Send, Plus, Link2, FileText, Sparkles, Brain, CheckCircle, Lightbulb, Clock, Upload, Eye, Image as ImageIcon, AlertTriangle } from "lucide-react";
 
-export default function ConsoleView({ onQuery, onIngestText, onIngestUrl }) {
+export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onIngestFile }) {
   // Chat state
   const [queryText, setQueryText] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [isQuerying, setIsQuerying] = useState(false);
 
   // Ingest state
-  const [ingestType, setIngestType] = useState("note"); // 'note' or 'url'
+  const [ingestType, setIngestType] = useState("file"); // 'note', 'url', 'file'
   const [noteTitle, setNoteTitle] = useState("");
   const [noteContent, setNoteContent] = useState("");
   const [noteModality, setNoteModality] = useState("note");
   const [urlInput, setUrlInput] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [ingestStatus, setIngestStatus] = useState(null);
   const [isIngesting, setIsIngesting] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleSendQuery = async (e) => {
     e?.preventDefault();
@@ -50,6 +52,28 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl }) {
     }
   };
 
+  const handleLoadSampleSlide = async () => {
+    try {
+      setIsIngesting(true);
+      setIngestStatus({ type: "info", msg: "Loading sample viral reel slide & analyzing with NVIDIA Nemotron 3.5 Super-VL..." });
+      const resp = await fetch("/sample_reel_slide.png");
+      const blob = await resp.blob();
+      const file = new File([blob], "instagram_reel_20_microservices.png", { type: "image/png" });
+      setSelectedFile(file);
+      
+      const res = await onIngestFile(file);
+      setIngestStatus({
+        type: "success",
+        msg: `NVIDIA Nemotron 3.5 Super-VL extracted slide keyframes! Added "${res.title}" (${res.chunks_count} chunks indexed).`,
+        challenge: res.adversarial_challenge
+      });
+    } catch (err) {
+      setIngestStatus({ type: "error", msg: "Failed to analyze sample slide: " + err.message });
+    } finally {
+      setIsIngesting(false);
+    }
+  };
+
   const handleIngest = async (e) => {
     e.preventDefault();
     setIsIngesting(true);
@@ -61,18 +85,30 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl }) {
         const res = await onIngestText(noteTitle, noteContent, noteModality);
         setIngestStatus({
           type: "success",
-          msg: `Ingested "${res.title}" into personal memory ladder (${res.chunks_count} chunks indexed).`
+          msg: `Ingested "${res.title}" into personal memory ladder (${res.chunks_count} chunks indexed).`,
+          challenge: res.adversarial_challenge
         });
         setNoteTitle("");
         setNoteContent("");
-      } else {
+      } else if (ingestType === "url") {
         if (!urlInput) return;
         const res = await onIngestUrl(urlInput);
         setIngestStatus({
           type: "success",
-          msg: `Extracted & indexed "${res.title}" from media stream.`
+          msg: `Extracted & indexed "${res.title}" from media stream.`,
+          challenge: res.adversarial_challenge
         });
         setUrlInput("");
+      } else if (ingestType === "file") {
+        if (!selectedFile) return;
+        const res = await onIngestFile(selectedFile);
+        setIngestStatus({
+          type: "success",
+          msg: `NVIDIA Nemotron 3.5 Super-VL analyzed visual media! Indexed "${res.title}" (${res.chunks_count} chunks).`,
+          challenge: res.adversarial_challenge
+        });
+        setSelectedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
       }
     } catch (err) {
       setIngestStatus({ type: "error", msg: "Failed to ingest content: " + err.message });
@@ -98,8 +134,29 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl }) {
           <h2 style={{ fontSize: "1.1rem", fontWeight: "700" }}>Ingest Knowledge Atom</h2>
         </div>
 
-        {/* Tab Selector */}
-        <div style={{ display: "flex", gap: "6px", background: "var(--bg-elevated)", padding: "4px", borderRadius: "8px", marginBottom: "18px" }}>
+        {/* Tab Selector (3 Modalities) */}
+        <div style={{ display: "flex", gap: "4px", background: "var(--bg-elevated)", padding: "4px", borderRadius: "8px", marginBottom: "18px" }}>
+          <button
+            onClick={() => setIngestType("file")}
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "5px",
+              padding: "7px 4px",
+              borderRadius: "6px",
+              border: "none",
+              background: ingestType === "file" ? "var(--bg-secondary)" : "transparent",
+              color: ingestType === "file" ? "var(--accent-primary)" : "var(--text-secondary)",
+              fontWeight: "600",
+              fontSize: "0.78rem",
+              cursor: "pointer"
+            }}
+          >
+            <Eye size={14} />
+            <span>Slide / VL</span>
+          </button>
           <button
             onClick={() => setIngestType("note")}
             style={{
@@ -107,19 +164,19 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl }) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "6px",
-              padding: "7px",
+              gap: "5px",
+              padding: "7px 4px",
               borderRadius: "6px",
               border: "none",
               background: ingestType === "note" ? "var(--bg-secondary)" : "transparent",
               color: ingestType === "note" ? "var(--accent-primary)" : "var(--text-secondary)",
               fontWeight: "600",
-              fontSize: "0.82rem",
+              fontSize: "0.78rem",
               cursor: "pointer"
             }}
           >
-            <FileText size={15} />
-            <span>Note / Decision</span>
+            <FileText size={14} />
+            <span>Note / ADR</span>
           </button>
           <button
             onClick={() => setIngestType("url")}
@@ -128,25 +185,99 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl }) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "6px",
-              padding: "7px",
+              gap: "5px",
+              padding: "7px 4px",
               borderRadius: "6px",
               border: "none",
               background: ingestType === "url" ? "var(--bg-secondary)" : "transparent",
               color: ingestType === "url" ? "var(--accent-primary)" : "var(--text-secondary)",
               fontWeight: "600",
-              fontSize: "0.82rem",
+              fontSize: "0.78rem",
               cursor: "pointer"
             }}
           >
-            <Link2 size={15} />
-            <span>Instagram / URL</span>
+            <Link2 size={14} />
+            <span>URL / Reel</span>
           </button>
         </div>
 
         {/* Ingest Form */}
         <form onSubmit={handleIngest} style={{ display: "flex", flexDirection: "column", gap: "14px", flex: 1 }}>
-          {ingestType === "note" ? (
+          {ingestType === "file" && (
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <label style={{ fontSize: "0.78rem", fontWeight: "600", color: "var(--text-secondary)" }}>
+                  Reel Keyframe / Infographic Slide
+                </label>
+                <span style={{ fontSize: "0.7rem", color: "var(--emerald-wisdom)", fontWeight: "600" }}>
+                  NVIDIA Nemotron 3.5 Super-VL
+                </span>
+              </div>
+
+              {/* Upload Dropzone */}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  border: "2px dashed var(--border-strong)",
+                  borderRadius: "10px",
+                  padding: "20px 16px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  background: selectedFile ? "var(--bg-secondary)" : "var(--bg-input)",
+                  transition: "all 0.2s ease"
+                }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,application/pdf"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setSelectedFile(e.target.files[0]);
+                    }
+                  }}
+                />
+                <Upload size={24} style={{ margin: "0 auto 8px", color: "var(--accent-primary)" }} />
+                <div style={{ fontSize: "0.86rem", fontWeight: "600", color: "var(--text-primary)" }}>
+                  {selectedFile ? selectedFile.name : "Click to upload slide or screenshot"}
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "var(--text-tertiary)", marginTop: "4px" }}>
+                  PNG, JPG, WEBP, or PDF (Instagram carousels & reels)
+                </div>
+              </div>
+
+              {/* Quick Sample Demo Button */}
+              <button
+                type="button"
+                onClick={handleLoadSampleSlide}
+                disabled={isIngesting}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "7px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border-subtle)",
+                  background: "var(--bg-elevated)",
+                  color: "var(--accent-primary)",
+                  fontSize: "0.78rem",
+                  fontWeight: "600",
+                  cursor: isIngesting ? "not-allowed" : "pointer"
+                }}
+              >
+                <Sparkles size={13} />
+                <span>Test Live Sample Slide: "20 Microservices Meme"</span>
+              </button>
+
+              <div style={{ fontSize: "0.78rem", color: "var(--text-tertiary)", lineHeight: "1.4" }}>
+                Super-VL automatically OCRs diagrams, extracts architectural advice, and checks for contradictions with your saved ADRs.
+              </div>
+            </div>
+          )}
+
+          {ingestType === "note" && (
             <>
               <div>
                 <label style={{ display: "block", fontSize: "0.78rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)" }}>
@@ -222,7 +353,9 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl }) {
                 />
               </div>
             </>
-          ) : (
+          )}
+
+          {ingestType === "url" && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "0.78rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)" }}>
@@ -252,21 +385,29 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl }) {
             </div>
           )}
 
+          {/* Status Alert */}
           {ingestStatus && (
             <div style={{
-              padding: "10px",
+              padding: "10px 12px",
               borderRadius: "8px",
-              fontSize: "0.8rem",
-              background: ingestStatus.type === "success" ? "var(--emerald-bg)" : "var(--crimson-bg)",
-              color: ingestStatus.type === "success" ? "var(--emerald-wisdom)" : "var(--crimson-challenge)"
+              fontSize: "0.82rem",
+              background: ingestStatus.type === "success" ? "var(--emerald-bg)" : ingestStatus.type === "info" ? "var(--accent-light)" : "var(--crimson-bg)",
+              color: ingestStatus.type === "success" ? "var(--emerald-wisdom)" : ingestStatus.type === "info" ? "var(--accent-primary)" : "var(--crimson-challenge)",
+              border: `1px solid ${ingestStatus.type === "success" ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
             }}>
-              {ingestStatus.msg}
+              <div>{ingestStatus.msg}</div>
+              {ingestStatus.challenge && (
+                <div style={{ marginTop: "6px", paddingTop: "6px", borderTop: "1px solid rgba(239, 68, 68, 0.2)", display: "flex", alignItems: "center", gap: "5px", color: "var(--crimson-challenge)", fontWeight: "600" }}>
+                  <AlertTriangle size={13} />
+                  <span>Adversarial Tension Flagged! Check Adversarial Radar tab.</span>
+                </div>
+              )}
             </div>
           )}
 
           <button
             type="submit"
-            disabled={isIngesting}
+            disabled={isIngesting || (ingestType === "file" && !selectedFile)}
             style={{
               padding: "10px 16px",
               borderRadius: "8px",
@@ -275,11 +416,11 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl }) {
               color: "#ffffff",
               fontSize: "0.88rem",
               fontWeight: "600",
-              cursor: isIngesting ? "not-allowed" : "pointer",
-              opacity: isIngesting ? 0.7 : 1
+              cursor: isIngesting || (ingestType === "file" && !selectedFile) ? "not-allowed" : "pointer",
+              opacity: isIngesting || (ingestType === "file" && !selectedFile) ? 0.65 : 1
             }}
           >
-            {isIngesting ? "Ingesting & Analyzing..." : "Ingest into Brain"}
+            {isIngesting ? "Analyzing & Ingesting..." : ingestType === "file" ? "Analyze Slide with Super-VL" : "Ingest into Brain"}
           </button>
         </form>
       </div>

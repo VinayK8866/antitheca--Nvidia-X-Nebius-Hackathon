@@ -1,21 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Moon, ArrowRight, ShieldCheck, Zap, Globe, RefreshCw } from "lucide-react";
+import { Sparkles, Moon, ArrowRight, ShieldCheck, Zap, Globe, RefreshCw, Clock, History, CheckCircle2 } from "lucide-react";
 
-export default function DailyBriefingView({ briefing, onTriggerReplay, isReplaying }) {
+export default function DailyBriefingView({ briefing, onTriggerReplay, isReplaying, schedulerStatus, onSimulateSchedule }) {
+  const isCronActive = schedulerStatus?.is_enabled ?? true;
+  const timeUntilSleep = schedulerStatus?.time_until_sleep_cycle || "12h 4m";
+  const recentRuns = schedulerStatus?.recent_runs || [];
+
   return (
     <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "32px 24px" }}>
       {/* Top Banner */}
       <div className="glass-panel" style={{
         padding: "28px 32px",
-        marginBottom: "28px",
+        marginBottom: "20px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        borderLeft: "4px solid var(--accent-primary)"
+        borderLeft: "4px solid var(--accent-primary)",
+        flexWrap: "wrap",
+        gap: "18px"
       }}>
-        <div>
+        <div style={{ flex: 1, minWidth: "320px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
             <span style={{
               display: "inline-flex",
@@ -40,17 +46,19 @@ export default function DailyBriefingView({ briefing, onTriggerReplay, isReplayi
             {briefing?.headline || "What Engram Thought About While You Slept"}
           </h1>
           <p style={{ marginTop: "6px", fontSize: "0.92rem", color: "var(--text-secondary)", maxWidth: "680px" }}>
-            While inactive, Engram scans newly ingested notes, detects hidden bridges in your knowledge graph, verifies open questions via Tavily, and stress-tests assumptions with NVIDIA Nemotron 3 Ultra.
+            While inactive, Engram scans newly ingested notes and reels, detects hidden topological bridges, verifies open questions via Tavily, and stress-tests assumptions with NVIDIA Nemotron 3 Ultra 550B.
           </p>
         </div>
 
-        <div>
+        {/* Action Controls */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <button
             onClick={onTriggerReplay}
             disabled={isReplaying}
             style={{
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
               gap: "8px",
               padding: "10px 18px",
               borderRadius: "10px",
@@ -68,6 +76,63 @@ export default function DailyBriefingView({ briefing, onTriggerReplay, isReplayi
             <RefreshCw size={16} className={isReplaying ? "animate-spin" : ""} style={{ animation: isReplaying ? "spin 1s linear infinite" : "none" }} />
             <span>{isReplaying ? "Consolidating Thoughts..." : "Run Replay Cycle Now"}</span>
           </button>
+
+          <button
+            onClick={onSimulateSchedule}
+            disabled={isReplaying}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              padding: "7px 14px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-subtle)",
+              background: "var(--bg-elevated)",
+              color: "var(--emerald-wisdom)",
+              fontSize: "0.78rem",
+              fontWeight: "600",
+              cursor: isReplaying ? "not-allowed" : "pointer"
+            }}
+          >
+            <Moon size={13} />
+            <span>Simulate 3:00 AM Cron Sleep</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Autonomous Sleep Cron Status Strip */}
+      <div className="glass-panel" style={{
+        padding: "14px 22px",
+        marginBottom: "24px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        background: "var(--bg-elevated)",
+        flexWrap: "wrap",
+        gap: "12px",
+        fontSize: "0.82rem"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{
+            width: "8px",
+            height: "8px",
+            borderRadius: "50%",
+            background: isCronActive ? "var(--emerald-wisdom)" : "var(--amber-fact)",
+            boxShadow: isCronActive ? "0 0 8px var(--emerald-wisdom)" : "none"
+          }} />
+          <span style={{ fontWeight: "600", color: "var(--text-primary)" }}>
+            Autonomous Sleep Daemon: {isCronActive ? "Active (Every Night at 03:00 AM)" : "Paused"}
+          </span>
+          <span style={{ color: "var(--text-tertiary)" }}>•</span>
+          <span style={{ color: "var(--text-secondary)" }}>
+            Next autonomous cycle in: <strong style={{ color: "var(--accent-primary)" }}>{timeUntilSleep}</strong>
+          </span>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-tertiary)" }}>
+          <History size={14} />
+          <span>Total Autonomous Executions: <strong>{schedulerStatus?.total_autonomous_runs ?? 0}</strong></span>
         </div>
       </div>
 

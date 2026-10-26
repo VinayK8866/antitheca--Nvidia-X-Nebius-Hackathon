@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, ShieldAlert, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { AlertTriangle, ShieldAlert, CheckCircle2, XCircle, ArrowRight, Code2, ShieldCheck, RefreshCw, FileCode } from "lucide-react";
 
-export default function AdversarialView({ challenges, onRespondToChallenge }) {
+export default function AdversarialView({ challenges, onRespondToChallenge, codeAudit, onRunCodeAudit, isAuditing }) {
   const [activeChallengeId, setActiveChallengeId] = useState(null);
   const [responseMode, setResponseMode] = useState("defend"); // 'defend' or 'concede'
   const [responseText, setResponseText] = useState("");
@@ -15,12 +15,17 @@ export default function AdversarialView({ challenges, onRespondToChallenge }) {
     setResponseText("");
   };
 
+  const isCompliant = codeAudit?.status === "compliant";
+  const complianceScore = codeAudit?.compliance_score ?? 100;
+  const verifiedClaims = codeAudit?.verified_claims || [];
+  const driftsFound = codeAudit?.drifts_found || [];
+
   return (
     <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "32px 24px" }}>
       {/* Header */}
       <div className="glass-panel" style={{
         padding: "24px 30px",
-        marginBottom: "28px",
+        marginBottom: "24px",
         borderLeft: "4px solid var(--crimson-challenge)"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
@@ -30,8 +35,98 @@ export default function AdversarialView({ challenges, onRespondToChallenge }) {
           </h2>
         </div>
         <p style={{ fontSize: "0.92rem", color: "var(--text-secondary)", lineHeight: "1.5" }}>
-          Unlike sycophantic chatbots that validate whatever you say, Engram actively stress-tests your notes against your past decisions and personal axioms. Here are open contradictions and vulnerabilities detected in your knowledge base.
+          Unlike sycophantic chatbots that validate whatever you say, Engram actively stress-tests your notes against your past decisions and personal axioms. Here are open contradictions and architectural drifts detected in your knowledge base and codebase.
         </p>
+      </div>
+
+      {/* Architectural Code Drift Radar Card */}
+      <div className="glass-panel" style={{
+        padding: "22px 26px",
+        marginBottom: "28px",
+        background: "var(--bg-elevated)",
+        border: isCompliant ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid rgba(239, 68, 68, 0.4)"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Code2 size={18} style={{ color: isCompliant ? "var(--emerald-wisdom)" : "var(--crimson-challenge)" }} />
+            <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "var(--text-primary)" }}>
+              Epistemic Code Drift Audit (Live ADR Precedent Verification)
+            </h3>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{
+              padding: "4px 10px",
+              borderRadius: "6px",
+              fontSize: "0.78rem",
+              fontWeight: "700",
+              background: isCompliant ? "var(--emerald-bg)" : "var(--crimson-bg)",
+              color: isCompliant ? "var(--emerald-wisdom)" : "var(--crimson-challenge)",
+              border: `1px solid ${isCompliant ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
+            }}>
+              {complianceScore}% Architectural Compliance
+            </span>
+
+            <button
+              onClick={onRunCodeAudit}
+              disabled={isAuditing}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "5px 12px",
+                borderRadius: "6px",
+                border: "1px solid var(--border-subtle)",
+                background: "var(--bg-card)",
+                color: "var(--text-primary)",
+                fontSize: "0.76rem",
+                fontWeight: "600",
+                cursor: isAuditing ? "not-allowed" : "pointer"
+              }}
+            >
+              <RefreshCw size={12} className={isAuditing ? "animate-spin" : ""} style={{ animation: isAuditing ? "spin 1s linear infinite" : "none" }} />
+              <span>{isAuditing ? "Auditing Code..." : "Re-Scan Repo"}</span>
+            </button>
+          </div>
+        </div>
+
+        <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
+          Engram continuously audits repository code commits against recorded Architectural Decision Records (ADRs) in <code>self_brain.db</code> to detect unauthorized architectural drift before it enters production.
+        </p>
+
+        {/* Verified Claims Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "10px" }}>
+          {verifiedClaims.map((claim, idx) => (
+            <div key={idx} style={{
+              padding: "10px 12px",
+              borderRadius: "8px",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border-subtle)",
+              fontSize: "0.8rem"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--emerald-wisdom)", fontWeight: "700", marginBottom: "4px" }}>
+                <ShieldCheck size={14} />
+                <span>{claim.rule}</span>
+              </div>
+              <div style={{ color: "var(--text-secondary)", fontSize: "0.76rem" }}>
+                {claim.details}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {driftsFound.length > 0 && (
+          <div style={{ marginTop: "14px", padding: "12px", borderRadius: "8px", background: "var(--crimson-bg)", border: "1px solid rgba(239, 68, 68, 0.3)" }}>
+            <div style={{ fontWeight: "700", color: "var(--crimson-challenge)", fontSize: "0.85rem", marginBottom: "6px" }}>
+              ⚠️ Detected Code Drifts:
+            </div>
+            {driftsFound.map((drift, dIdx) => (
+              <div key={dIdx} style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                • <strong>{drift.file}</strong>: {drift.issue}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Challenges List */}

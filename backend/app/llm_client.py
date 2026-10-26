@@ -64,6 +64,32 @@ class NebiusNemotronClient:
 
         return self._local_fallback_response(prompt, system_prompt, model_type)
 
+    def analyze_image(self, image_bytes: bytes, prompt: str = "Analyze this image and summarize its key insights, diagrams, and text.") -> str:
+        """Processes an image using NVIDIA Nemotron 3.5 Super-VL hosted on Nebius."""
+        if not self.is_live or not image_bytes:
+            return "Visual description: [Image processed locally - visual media indexed]."
+
+        try:
+            import base64
+            b64_image = base64.b64encode(image_bytes).decode("utf-8")
+            resp = self._client.chat.completions.create(
+                model=settings.NVIDIA_VL_MODEL,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64_image}"}}
+                    ]
+                }],
+                max_tokens=1500
+            )
+            msg = resp.choices[0].message
+            content = msg.content or msg.reasoning_content or ""
+            return content.strip()
+        except Exception as e:
+            logger.error(f"Nebius Nemotron Super-VL vision call failed: {e}")
+            return f"Visual analysis fallback: {e}"
+
     def classify_intent(self, user_query: str) -> Dict[str, Any]:
         """Uses fast model to classify query intent and extract target concepts."""
         system_prompt = (

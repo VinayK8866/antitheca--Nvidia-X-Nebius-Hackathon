@@ -68,29 +68,15 @@ def extract_image_content(content_bytes: bytes, filename_or_url: str = "image.pn
     except Exception as e:
         logger.warning(f"PIL/Image metadata extraction warning for {title}: {e}")
 
-    # Convert to base64 for LLM Vision processing
-    b64_img = base64.b64encode(content_bytes).decode('utf-8')
-    
-    # Query Ollama Vision model if running
-    from app.llm import check_ollama_status, OLLAMA_URL
-    status = check_ollama_status()
-    if status["online"]:
-        vision_models = [m for m in status.get("models", []) if any(v in m.lower() for v in ["vision", "llava", "multimodal"])]
-        if vision_models:
-            try:
-                resp = requests.post(f"{OLLAMA_URL}/api/generate", json={
-                    "model": vision_models[0],
-                    "prompt": "Describe this image briefly. Extract any visible text, dates, numbers, tables, or notices.",
-                    "images": [b64_img],
-                    "stream": False,
-                    "options": {
-                        "num_predict": 128
-                    }
-                }, timeout=20)
-                if resp.status_code == 200:
-                    visual_description = resp.json().get("response", "").strip()
-            except Exception as e:
-                logger.warning(f"Vision LLM query note: {e}")
+    # Use NVIDIA Nemotron 3.5 Super-VL via Nebius Token Factory
+    try:
+        from app.llm_client import llm_client
+        visual_description = llm_client.analyze_image(
+            content_bytes,
+            prompt="Analyze this visual media or slide. Extract visible diagrams, workflow steps, code snippets, and key ideas."
+        )
+    except Exception as e:
+        logger.warning(f"Nemotron Super-VL extraction note: {e}")
 
     # Build final markdown content
     content_lines = [f"# Visual Media: {title}", f"- **Format**: {metadata['format']} | **Dimensions**: {metadata['dimensions']}"]

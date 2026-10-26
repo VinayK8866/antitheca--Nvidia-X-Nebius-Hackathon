@@ -1,15 +1,18 @@
 "use client";
 
-import { Brain, Cpu, Sparkles, Network, AlertTriangle, MessageSquareCode, Globe2 } from "lucide-react";
+import { Brain, Cpu, Sparkles, Network, AlertTriangle, MessageSquareCode, Globe2, Clock, Eye } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
-export default function Navbar({ activeTab, setActiveTab, systemStatus }) {
+export default function Navbar({ activeTab, setActiveTab, systemStatus, schedulerStatus }) {
   const tabs = [
     { id: "replay", label: "Cognitive Replay", icon: Sparkles },
     { id: "graph", label: "Knowledge Graph", icon: Network },
     { id: "challenges", label: "Adversarial Radar", icon: AlertTriangle, badge: systemStatus?.epistemic_stats?.open_adversarial_challenges },
     { id: "console", label: "Console & Ingest", icon: MessageSquareCode }
   ];
+
+  const isCronActive = schedulerStatus?.is_enabled ?? true;
+  const timeUntilSleep = schedulerStatus?.time_until_sleep_cycle || "12h";
 
   return (
     <header style={{
@@ -68,9 +71,10 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus }) {
           display: "flex",
           alignItems: "center",
           gap: "8px",
-          marginLeft: "12px",
-          paddingLeft: "16px",
-          borderLeft: "1px solid var(--border-subtle)"
+          marginLeft: "8px",
+          paddingLeft: "14px",
+          borderLeft: "1px solid var(--border-subtle)",
+          flexWrap: "wrap"
         }}>
           <div style={{
             display: "flex",
@@ -79,11 +83,11 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus }) {
             padding: "4px 8px",
             borderRadius: "6px",
             background: "var(--bg-elevated)",
-            fontSize: "0.74rem",
+            fontSize: "0.73rem",
             color: "var(--text-secondary)"
           }}>
             <Cpu size={13} style={{ color: "var(--emerald-wisdom)" }} />
-            <span>Nebius Token Factory: <strong>Nemotron 3 Ultra 550B</strong></span>
+            <span>Nebius: <strong>Nemotron Ultra 550B</strong></span>
           </div>
           <div style={{
             display: "flex",
@@ -92,11 +96,39 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus }) {
             padding: "4px 8px",
             borderRadius: "6px",
             background: "var(--bg-elevated)",
-            fontSize: "0.74rem",
+            fontSize: "0.73rem",
+            color: "var(--text-secondary)"
+          }}>
+            <Eye size={13} style={{ color: "var(--accent-primary)" }} />
+            <span>VL: <strong>Super-VL 3.5</strong></span>
+          </div>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+            padding: "4px 8px",
+            borderRadius: "6px",
+            background: "var(--bg-elevated)",
+            fontSize: "0.73rem",
             color: "var(--text-secondary)"
           }}>
             <Globe2 size={13} style={{ color: "var(--cyan-tavily)" }} />
             <span>Tavily AI: <strong>Active</strong></span>
+          </div>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+            padding: "4px 8px",
+            borderRadius: "6px",
+            background: "var(--emerald-bg)",
+            border: "1px solid rgba(16, 185, 129, 0.25)",
+            fontSize: "0.73rem",
+            color: "var(--emerald-wisdom)",
+            fontWeight: "600"
+          }}>
+            <Clock size={12} />
+            <span>3:00 AM Cron: <strong>Active</strong> ({timeUntilSleep})</span>
           </div>
         </div>
       </div>

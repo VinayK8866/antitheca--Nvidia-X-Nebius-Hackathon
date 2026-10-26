@@ -1,0 +1,2 @@
+* After completing the required code for showing the system, if we got any time, now think big. Because we created our plan as we only have 4.5 days left, but if we left of our time, we can implement many other things. So whatever you feel, that needs to be done aftre making the basic working demo of our system, add the list of the tasks here accordingly.
+* While making the project, make sure that you're completing the requirements of the hackathon and also keeping the innovation in mind. So that we can win the hackathon. Otherwise, it's just a waste of time and energy.
