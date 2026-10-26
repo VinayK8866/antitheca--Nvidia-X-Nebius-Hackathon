@@ -31,8 +31,23 @@ class MorningDispatcher:
         contradictions = briefing.get("contradictions", 0)
         facts = briefing.get("gaps_researched", 0)
 
+        # Fetch pending temporal commitments
+        from app.temporal_radar import temporal_radar
+        open_commitments = temporal_radar.get_open_commitments(limit=3)
+        commitments_summary = ""
+        if open_commitments:
+            commitments_summary = "\n".join([f"• [{c['urgency'].upper()}] {c['task_text'][:60]} ({c['deadline_context']})" for c in open_commitments])
+
         # Discord webhook format
         if "discord.com" in target_url:
+            fields = [
+                {"name": "🧠 Consolidated Atoms", "value": str(atoms_count), "inline": True},
+                {"name": "⚡ Contradictions Flagged", "value": str(contradictions), "inline": True},
+                {"name": "🌐 Verified Web Facts", "value": str(facts), "inline": True}
+            ]
+            if commitments_summary:
+                fields.append({"name": "⏰ Temporal Commitments & Deadlines", "value": commitments_summary, "inline": False})
+
             payload = {
                 "username": "Engram Epistemic Engine",
                 "avatar_url": "https://assets.khoj.dev/khoj-logo-sideways-1200x540.png",
@@ -41,11 +56,7 @@ class MorningDispatcher:
                         "title": f"🌅 Engram Morning Cognitive Briefing ({date_str})",
                         "description": f"**{headline}**\n\n{preview_text}",
                         "color": 65450, # Emerald teal
-                        "fields": [
-                            {"name": "🧠 Consolidated Atoms", "value": str(atoms_count), "inline": True},
-                            {"name": "⚡ Contradictions Flagged", "value": str(contradictions), "inline": True},
-                            {"name": "🌐 Verified Web Facts", "value": str(facts), "inline": True}
-                        ],
+                        "fields": fields,
                         "footer": {
                             "text": "Autonomous 3:00 AM Sleep Replay • NVIDIA Nemotron 3 Ultra 550B & Tavily"
                         }
@@ -54,10 +65,15 @@ class MorningDispatcher:
             }
         else:
             # Generic JSON / Slack compatible webhook format
+            text_body = f"🌅 *Engram Morning Briefing ({date_str})*\n*{headline}*\n\n{preview_text}"
+            if commitments_summary:
+                text_body += f"\n\n*⏰ Urgent Deadlines:*\n{commitments_summary}"
+
             payload = {
-                "text": f"🌅 *Engram Morning Briefing ({date_str})*\n*{headline}*\n\n{preview_text}",
+                "text": text_body,
                 "headline": headline,
                 "summary": summary,
+                "open_commitments": open_commitments,
                 "metrics": {
                     "atoms": atoms_count,
                     "contradictions": contradictions,

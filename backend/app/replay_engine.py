@@ -133,7 +133,11 @@ Format all cross-references to decisions, notes, or foundational concepts as Obs
         # 7. Generate or update Obsidian Map of Content (MOC)
         moc_res = self.generate_map_of_content()
 
-        logger.info(f"Cognitive Replay finished successfully for {len(doc_ids)} atoms. MOC updated.")
+        # 8. Run Epistemic Defrag & Vault Layout Hygiene
+        from app.code_auditor import code_auditor
+        defrag_res = code_auditor.run_epistemic_defrag()
+
+        logger.info(f"Cognitive Replay finished successfully for {len(doc_ids)} atoms. MOC and Defrag updated.")
         return {
             "status": "completed",
             "date": today_str,
@@ -141,7 +145,8 @@ Format all cross-references to decisions, notes, or foundational concepts as Obs
             "replayed_atoms": len(doc_ids),
             "briefing_markdown": briefing_markdown,
             "research_gaps": research_gaps,
-            "map_of_content": moc_res.get("markdown")
+            "map_of_content": moc_res.get("markdown"),
+            "defrag": defrag_res
         }
 
     def generate_map_of_content(self, vault_dir: Optional[str] = None) -> Dict[str, Any]:

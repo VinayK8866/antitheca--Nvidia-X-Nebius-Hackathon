@@ -269,10 +269,44 @@ def run_code_audit():
 
 @app.get("/api/audit/vault")
 def run_vault_audit(vault_dir: Optional[str] = None):
-    """Scans Obsidian vault for broken wikilinks, orphan notes, and MOC health (Karpathy pattern)."""
+    """Scans Obsidian vault for broken wikilinks, orphan notes, PARA layout, and MOC health."""
     return code_auditor.audit_vault(vault_dir=vault_dir)
 
-# 5b. Map of Content (MOC) Endpoints (Obsidian LLM Wiki Pattern)
+# 5b. Cognitive Defrag & Tag Garden Hygiene Endpoints
+@app.post("/api/defrag/run")
+def run_defrag_endpoint(vault_dir: Optional[str] = None):
+    """Executes a structural defragmentation pass: flags decaying notes, orphan tags, and generates report."""
+    return code_auditor.run_epistemic_defrag(vault_dir=vault_dir)
+
+@app.get("/api/defrag/latest")
+def get_latest_defrag_endpoint():
+    """Returns the latest defragmentation and hygiene audit report."""
+    conn = get_self_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT run_date, decayed_notes_count, merged_concepts_count, orphan_tags_count, defrag_report_markdown, created_at FROM defrag_logs ORDER BY id DESC LIMIT 1")
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return code_auditor.run_epistemic_defrag()
+    return dict(row)
+
+# 5c. Temporal Commitment & Deadline Radar Endpoints
+@app.get("/api/commitments")
+def get_commitments_endpoint(limit: int = 20):
+    """Retrieves all open temporal commitments extracted from notes and transcripts."""
+    from app.temporal_radar import temporal_radar
+    return temporal_radar.get_open_commitments(limit=limit)
+
+@app.post("/api/commitments/{commitment_id}/resolve")
+def resolve_commitment_endpoint(commitment_id: int, action: str = "completed"):
+    """Marks a temporal commitment as completed or dismissed."""
+    from app.temporal_radar import temporal_radar
+    success = temporal_radar.resolve_commitment(commitment_id, resolution=action)
+    if not success:
+        raise HTTPException(status_code=404, detail="Commitment not found")
+    return {"status": "resolved", "commitment_id": commitment_id, "action": action}
+
+# 5d. Map of Content (MOC) Endpoints (Obsidian LLM Wiki Pattern)
 @app.get("/api/vault/moc")
 def get_map_of_content(vault_dir: Optional[str] = None):
     """Retrieves or generates the Obsidian-compatible Map of Content (Map_of_Content.md)."""

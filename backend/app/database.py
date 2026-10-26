@@ -201,6 +201,35 @@ def init_self_db(db_path: Optional[str] = None):
     );
     """)
 
+    # Temporal Commitments & Deadlines Extracted from Notes/Transcripts
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS temporal_commitments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        doc_id INTEGER,
+        task_text TEXT NOT NULL,
+        urgency TEXT DEFAULT 'medium', -- critical, high, medium, low
+        deadline_date TEXT,
+        deadline_context TEXT,
+        status TEXT DEFAULT 'pending', -- pending, completed, dismissed
+        source_snippet TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (doc_id) REFERENCES documents (id) ON DELETE CASCADE
+    );
+    """)
+
+    # Cognitive Defrag & Knowledge Hygiene Logs
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS defrag_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_date DATE NOT NULL,
+        decayed_notes_count INTEGER DEFAULT 0,
+        merged_concepts_count INTEGER DEFAULT 0,
+        orphan_tags_count INTEGER DEFAULT 0,
+        defrag_report_markdown TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
     conn.commit()
     conn.close()
     logger.info("Initialized self_brain.db schema successfully.")

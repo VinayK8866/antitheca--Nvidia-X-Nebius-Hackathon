@@ -126,6 +126,25 @@ Engram queries Tavily in parallel, deduplicates sources, computes an empirical c
 - **Autonomous `Map_of_Content.md` (MOC)**: Generated automatically during the 03:00 AM sleep replay cycle, organizing your vault into Architecture Decisions (ADRs), Engineering Principles, Active Contradictions, and Empirical Benchmarks.
 - **Epistemic Vault Health Linter (`wiki-lint`)**: Scans for broken wikilinks, orphan thoughts (notes with 0 connections), and empty stubs to keep your knowledge graph clean and compounding over time.
 
+### 7. Native PARA Architecture & Dynamic Vault Map (`Meta/vault-map.md`)
+- Adheres to the established **PARA (Projects, Areas, Resources, Archive)** knowledge organization standard.
+- Reads `Meta/vault-map.md` to dynamically route knowledge atoms:
+  - `00-Inbox/`: Unprocessed brain dumps, transcripts, and mobile captures pending sleep replay.
+  - `01-Projects/`: Active milestones and engineering deliverables.
+  - `02-Areas/`: Long-term responsibilities, principles, and active ADRs.
+  - `03-Resources/`: Technical whitepapers, benchmarks, and external cheatsheets.
+  - `04-Archive/`: Superceded ADRs, completed sprints, and decayed knowledge.
+
+### 8. Temporal Commitment & Deadline Radar (`app/temporal_radar.py`)
+- Automatically parses messy brain dumps, meeting notes, and voice transcripts for hidden deliverables and deadlines (e.g. *"submit video by Thursday 5pm"*, *"follow up with Alex before sprint review"*).
+- Extracts urgency level, deadline timeframe, and source note link.
+- Injects critical upcoming deadlines directly into your morning Discord/Slack webhook dispatch and the Adversarial Radar UI.
+
+### 9. 5-Phase Cognitive Defrag & Tag Garden Hygiene (`app/code_auditor.py`)
+- **Tag Garden Audit**: Identifies orphan tags (used only once) and suggests merges for near-duplicate taxonomy terms (e.g. `#infrastructure` → `#infra`).
+- **Knowledge Decay Detection**: Detects stale notes with zero incoming links and flags them as archival candidates for `04-Archive/`.
+- **Structural Defrag Report**: Generates an actionable hygiene markdown audit during the 3:00 AM sleep replay or on-demand.
+
 ---
 
 ## 🚀 Quickstart Guide

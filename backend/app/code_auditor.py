@@ -103,12 +103,13 @@ class EpistemicCodeAuditor:
         }
 
     def audit_vault(self, vault_dir: Optional[str] = None) -> Dict[str, Any]:
-        """Scans Obsidian vault for broken wikilinks, orphan notes, and Map of Content (MOC) integrity."""
+        """Scans Obsidian vault for broken wikilinks, orphan notes, PARA layout compliance, and MOC integrity."""
         target_path = Path(vault_dir) if vault_dir else Path(__file__).resolve().parent.parent / "demo_vault"
         if not target_path.exists() or not target_path.is_dir():
             target_path = Path(__file__).resolve().parent.parent / "data"
 
-        md_files = list(target_path.glob("*.md"))
+        # Scan all markdown files recursively, skipping hidden folders
+        md_files = [f for f in target_path.rglob("*.md") if not any(p.startswith(".") for p in f.parts)]
         file_stems = {f.stem.lower(): f.stem for f in md_files}
         
         # Add decisions and challenges from database to known targets
@@ -174,11 +175,11 @@ class EpistemicCodeAuditor:
             except Exception as e:
                 logger.debug(f"Error checking vault file {f}: {e}")
 
-        # Detect orphan notes (not Map_of_Content itself)
+        # Detect orphan notes (excluding Map_of_Content and vault-map)
         orphan_notes = []
         for f in md_files:
             stem = f.stem.lower()
-            if stem == "map_of_content":
+            if stem in ["map_of_content", "vault-map"]:
                 continue
             outgoing = len(links_from.get(stem, []))
             incoming = links_to.get(stem, 0)
@@ -188,6 +189,13 @@ class EpistemicCodeAuditor:
         # Check Map of Content presence
         moc_path = target_path / "Map_of_Content.md"
         moc_present = moc_path.exists()
+
+        # Check PARA Vault Map layout presence
+        vault_map_path = target_path / "Meta" / "vault-map.md"
+        vault_map_present = vault_map_path.exists()
+        para_folders = ["00-Inbox", "01-Projects", "02-Areas", "03-Resources", "04-Archive"]
+        found_para_folders = [f for f in para_folders if (target_path / f).exists() and (target_path / f).is_dir()]
+        para_compliant = vault_map_present and (len(found_para_folders) >= 3)
 
         penalties = (len(broken_wikilinks) * 10) + (len(orphan_notes) * 5)
         vault_health_score = max(0, 100 - penalties)
@@ -201,7 +209,115 @@ class EpistemicCodeAuditor:
             "broken_wikilinks": broken_wikilinks,
             "orphan_notes": orphan_notes,
             "moc_present": moc_present,
-            "moc_path": str(moc_path) if moc_present else None
+            "moc_path": str(moc_path) if moc_present else None,
+            "para_layout": {
+                "compliant": para_compliant,
+                "vault_map_present": vault_map_present,
+                "vault_map_path": str(vault_map_path) if vault_map_present else None,
+                "detected_para_folders": found_para_folders
+            }
+        }
+
+    def run_epistemic_defrag(self, vault_dir: Optional[str] = None) -> Dict[str, Any]:
+        """Runs cognitive defragmentation: identifies decaying knowledge, orphan tags, and generates actionable hygiene recommendations."""
+        import json
+        from datetime import date
+
+        vault_health = self.audit_vault(vault_dir)
+        conn = get_self_db_connection()
+        cur = conn.cursor()
+
+        # 1. Stale Notes: docs with 0 or 1 connection
+        cur.execute("SELECT id, title, modality, tags_json, created_at FROM documents ORDER BY id ASC")
+        docs = cur.fetchall()
+
+        # 2. Tag Garden Analysis: detect orphan tags and near-duplicates
+        tag_counts = {}
+        for d in docs:
+            raw_tags = json.loads(d["tags_json"] or "[]")
+            for t in raw_tags:
+                clean_t = t.lower().replace("#", "").strip()
+                if clean_t:
+                    tag_counts[clean_t] = tag_counts.get(clean_t, 0) + 1
+
+        orphan_tags = [t for t, count in tag_counts.items() if count == 1]
+
+        # Detect near-duplicate tags (e.g. singular vs plural)
+        duplicate_tag_suggestions = []
+        tag_list = list(tag_counts.keys())
+        for i in range(len(tag_list)):
+            for j in range(i + 1, len(tag_list)):
+                t1, t2 = tag_list[i], tag_list[j]
+                if t1 + "s" == t2 or t2 + "s" == t1 or (len(t1) > 4 and t1 in t2):
+                    duplicate_tag_suggestions.append({
+                        "primary": t1 if tag_counts[t1] >= tag_counts[t2] else t2,
+                        "merge_target": t2 if tag_counts[t1] >= tag_counts[t2] else t1
+                    })
+
+        # 3. Decaying Knowledge / Archival candidates
+        orphan_notes = vault_health.get("orphan_notes", [])
+        archival_candidates = [n for n in orphan_notes if not n.startswith("ADR_")]
+
+        # 4. Generate Defrag Report Markdown
+        report_lines = [
+            f"# 🧹 Epistemic Defrag Report ({date.today().isoformat()})",
+            "",
+            "## 1. 🌿 Tag Garden Hygiene",
+            f"- **Total Unique Tags**: {len(tag_counts)}",
+            f"- **Orphan Tags (1 use)**: {len(orphan_tags)} ({', '.join(orphan_tags[:8]) if orphan_tags else 'None'})",
+        ]
+        if duplicate_tag_suggestions:
+            report_lines.append("- **Suggested Merges**:")
+            for s in duplicate_tag_suggestions[:4]:
+                report_lines.append(f"  - Merge `#{s['merge_target']}` into `#{s['primary']}`")
+        else:
+            report_lines.append("- *Zero duplicate tag collisions detected.*")
+
+        report_lines.extend([
+            "",
+            "## 2. ⏳ Decaying Knowledge & Archival Candidates",
+            f"- **Orphan Notes Without Connections**: {len(orphan_notes)}",
+        ])
+        if archival_candidates:
+            for ac in archival_candidates:
+                report_lines.append(f"  - Recommended for `04-Archive/`: `[[{ac}]]`")
+        else:
+            report_lines.append("  - *All notes actively connected in Map of Content.*")
+
+        report_lines.extend([
+            "",
+            "## 3. 🗺️ PARA Layout Health",
+            f"- **PARA Standard**: {'✅ Compliant' if vault_health['para_layout']['compliant'] else '⚠️ Partially Structured'}",
+            f"- **Detected Folders**: {', '.join(vault_health['para_layout']['detected_para_folders'])}",
+            f"- **Vault Health Score**: {vault_health['vault_health_score']}/100"
+        ])
+
+        report_markdown = "\n".join(report_lines)
+
+        # 5. Persist to defrag_logs table
+        cur.execute("""
+        INSERT INTO defrag_logs (run_date, decayed_notes_count, merged_concepts_count, orphan_tags_count, defrag_report_markdown)
+        VALUES (?, ?, ?, ?, ?)
+        """, (
+            date.today().isoformat(),
+            len(archival_candidates),
+            len(duplicate_tag_suggestions),
+            len(orphan_tags),
+            report_markdown
+        ))
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "defrag_completed",
+            "run_date": date.today().isoformat(),
+            "vault_health_score": vault_health["vault_health_score"],
+            "decayed_notes_count": len(archival_candidates),
+            "orphan_tags_count": len(orphan_tags),
+            "suggested_tag_merges": duplicate_tag_suggestions,
+            "archival_candidates": archival_candidates,
+            "para_layout": vault_health["para_layout"],
+            "report_markdown": report_markdown
         }
 
 code_auditor = EpistemicCodeAuditor()

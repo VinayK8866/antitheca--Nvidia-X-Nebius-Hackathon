@@ -31,8 +31,10 @@ Engram is the first personal AI system modeled directly after **neuroscience mem
 3. **Zero-Sycophancy Epistemic Memory & Adversarial Radar**: Engram refuses to be an agreeable yes-man. When you ingest new reels or propose ideas that contradict your established principles, Engram sounds an immediate alarm, flags the tension, and forces you to confront the contradiction.
 4. **Iterative Multi-Query Tavily Deep Research Loop**: Decomposes complex or ambiguous claims into 3 orthogonal subqueries (empirical benchmarks, failure modes, and consensus best practices), queries Tavily in parallel, deduplicates sources, and computes an empirical grounding confidence score.
 5. **Multimodal Reel & Slide Extraction**: Powered by **NVIDIA Nemotron 3.5 Super-VL**, Engram processes screenshots, carousels, and architectural slides from saved reels, extracting diagrams and text overlays into sovereign memory.
-6. **Bulk Obsidian Vault Ingest**: Ingests entire local folders of Markdown notes, ADRs, and PDFs in seconds.
-7. **Static ADR Code Drift Auditor**: Automatically audits your actual code repository to ensure you haven't violated your documented architectural decisions.
+6. **Native PARA Vault Standard & Obsidian Interoperability**: Organizes knowledge according to the PARA method (Projects, Areas, Resources, Archive), auto-generating `Meta/vault-map.md`, bidirectional `[[wikilinks]]`, and an autonomous `Map_of_Content.md` index synced for Obsidian Graph View.
+7. **Temporal Commitment & Deadline Radar**: Scans messy brain dumps and meeting notes for hidden deliverables and deadlines, grouping them by urgency and surfacing them in the Morning Dispatch.
+8. **5-Phase Cognitive Defrag & Tag Garden Hygiene**: Periodically audits knowledge health, pruning orphan tags, flagging decaying notes that lack backlinks, and recommending archival candidates for `04-Archive/`.
+9. **Static ADR Code Drift Auditor**: Automatically audits your actual code repository to ensure your implementation complies with documented architectural decisions (e.g. ADR 028).
 
 ---
 

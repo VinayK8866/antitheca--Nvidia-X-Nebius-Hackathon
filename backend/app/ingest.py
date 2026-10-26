@@ -98,7 +98,11 @@ class KnowledgeIngestionPipeline:
         # 6. Run Adversarial Stress-Test
         challenge = challenger.evaluate_content_for_challenges(doc_id, title, sanitized_content)
 
-        logger.info(f"Ingested document #{doc_id}: '{title}' ({len(chunks)} chunks, modality={modality})")
+        # 7. Extract Action Items & Temporal Commitments (Deadline Radar)
+        from app.temporal_radar import temporal_radar
+        extracted_commitments = temporal_radar.extract_commitments_from_text(doc_id, title, sanitized_content)
+
+        logger.info(f"Ingested document #{doc_id}: '{title}' ({len(chunks)} chunks, commitments={len(extracted_commitments)})")
         return {
             "doc_id": doc_id,
             "title": title,
@@ -107,6 +111,7 @@ class KnowledgeIngestionPipeline:
             "tags": all_tags,
             "wikilinks": wikilinks,
             "adversarial_challenge": challenge,
+            "commitments": extracted_commitments,
             "status": "ingested_pending_replay"
         }
 
