@@ -262,10 +262,34 @@ async def trigger_scheduled_cycle():
     record = await scheduler.execute_cycle(trigger_source="manual_simulation")
     return record
 
-# 5. Epistemic Code Drift Auditor
+# 5. Epistemic Code & Vault Drift Auditor
 @app.get("/api/audit/code")
 def run_code_audit():
     return code_auditor.audit_workspace()
+
+@app.get("/api/audit/vault")
+def run_vault_audit(vault_dir: Optional[str] = None):
+    """Scans Obsidian vault for broken wikilinks, orphan notes, and MOC health (Karpathy pattern)."""
+    return code_auditor.audit_vault(vault_dir=vault_dir)
+
+# 5b. Map of Content (MOC) Endpoints (Obsidian LLM Wiki Pattern)
+@app.get("/api/vault/moc")
+def get_map_of_content(vault_dir: Optional[str] = None):
+    """Retrieves or generates the Obsidian-compatible Map of Content (Map_of_Content.md)."""
+    from pathlib import Path
+    target_path = Path(vault_dir) if vault_dir else Path(__file__).resolve().parent.parent / "demo_vault" / "Map_of_Content.md"
+    if not target_path.exists():
+        return replay_engine.generate_map_of_content(vault_dir=vault_dir)
+    return {
+        "status": "ready",
+        "markdown": target_path.read_text(encoding="utf-8", errors="ignore"),
+        "moc_path": str(target_path)
+    }
+
+@app.post("/api/vault/moc/generate")
+def generate_map_of_content_endpoint(vault_dir: Optional[str] = None):
+    """Regenerates the Map of Content (Map_of_Content.md) with native Obsidian wikilinks."""
+    return replay_engine.generate_map_of_content(vault_dir=vault_dir)
 
 # 6. Knowledge Graph Visualization
 @app.get("/api/graph")

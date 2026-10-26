@@ -39,6 +39,11 @@ All three high-impact additions are implemented, live, and verified end-to-end:
   - Deduplicates sources and synthesizes empirical confidence score.
   - Dedicated "Deep Research" trigger in Console with multi-source card view.
 
+### 5. Obsidian LLM Wiki Standard & Vault Health Linter (Surpassing `claude-obsidian`)
+- **Native Obsidian `[[Wikilinks]]`**: Bidirectional wikilink formatting across notes, ADRs, and sleep briefings making Engram vaults 100% natively browsable in Obsidian Graph View and Canvas.
+- **Autonomous `Map_of_Content.md`**: Auto-generated on every 03:00 AM sleep replay cycle, indexing ADRs, principles, contradictions, and empirical benchmarks.
+- **Epistemic Vault Health Linter (`wiki-lint`)**: Live in-UI health audit reporting 100% health score, zero broken links, zero orphan notes, and an integrated MOC viewer.
+
 ---
 
 ## 🏆 Devpost Winning Submission Checklist

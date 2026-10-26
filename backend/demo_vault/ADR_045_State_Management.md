@@ -13,3 +13,8 @@ We strictly reject distributed in-memory caches. We use SQLite in WAL mode with 
 - Zero external broker latency or cloud hosting cost.
 - ACID compliance with 100k+ reads/sec on NVMe.
 - Hard constraint: Do not introduce distributed key-value brokers.
+
+## Related Notes
+- [[PostgreSQL_vs_SQLite_Debate]]
+- [[Autonomous_Agent_Memory_Loops]]
+

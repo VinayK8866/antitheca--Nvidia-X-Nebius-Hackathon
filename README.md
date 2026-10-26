@@ -121,6 +121,11 @@ Engram queries Tavily in parallel, deduplicates sources, computes an empirical c
   - Verifies **ADR 031** (Strict file-level boundary between `self_brain.db` and `world_brain.db`).
   - Verifies **Data Sovereignty** (No plaintext secrets or leaked keys).
 
+### 6. Obsidian LLM Wiki Standard & Vault Health Linter (`app/code_auditor.py` & `app/replay_engine.py`)
+- **Native Obsidian `[[Wikilinks]]`**: Notes and sleep briefings use standard bidirectional `[[wikilink]]` syntax, making the entire knowledge base natively navigable in Obsidian Graph View and Canvas.
+- **Autonomous `Map_of_Content.md` (MOC)**: Generated automatically during the 03:00 AM sleep replay cycle, organizing your vault into Architecture Decisions (ADRs), Engineering Principles, Active Contradictions, and Empirical Benchmarks.
+- **Epistemic Vault Health Linter (`wiki-lint`)**: Scans for broken wikilinks, orphan thoughts (notes with 0 connections), and empty stubs to keep your knowledge graph clean and compounding over time.
+
 ---
 
 ## 🚀 Quickstart Guide

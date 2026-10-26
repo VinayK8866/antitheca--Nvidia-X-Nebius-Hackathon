@@ -6,3 +6,8 @@ Saved reflection on database overhead.
 - Connection pooling, connection leaks, and VPC networking introduce unnecessary failure points for a personal AI.
 - SQLite WAL mode embedded in FastAPI handles 4GB+ with sub-millisecond retrieval.
 - "You aren't Google, stop running Google's stack."
+
+## Related Decisions
+- [[ADR_045_State_Management]]
+- [[Microservices_Anti_Pattern_Notes]]
+

@@ -28,6 +28,10 @@ wheels/
 *.db
 *.db-wal
 *.db-shm
+backend/data/*.db
+backend/data/*.db-wal
+backend/data/*.db-shm
+data/*.db
 vault/
 scratch/
 uploads/

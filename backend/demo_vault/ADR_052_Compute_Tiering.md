@@ -15,3 +15,8 @@ We enforce dynamic compute tiering:
 
 ## Consequences
 Reduces inference cost by 92% while maintaining enterprise-grade reasoning depth where it matters.
+
+## Related Notes
+- [[Autonomous_Agent_Memory_Loops]]
+- [[Microservices_Anti_Pattern_Notes]]
+

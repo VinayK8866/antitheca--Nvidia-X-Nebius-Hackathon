@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, ShieldAlert, CheckCircle2, XCircle, ArrowRight, Code2, ShieldCheck, RefreshCw, FileCode } from "lucide-react";
+import { AlertTriangle, ShieldAlert, CheckCircle2, XCircle, ArrowRight, Code2, ShieldCheck, RefreshCw, FileCode, BookOpen, Compass, Link2, ExternalLink, Network } from "lucide-react";
 
 export default function AdversarialView({ challenges, onRespondToChallenge, codeAudit, onRunCodeAudit, isAuditing }) {
   const [activeChallengeId, setActiveChallengeId] = useState(null);
   const [responseMode, setResponseMode] = useState("defend"); // 'defend' or 'concede'
   const [responseText, setResponseText] = useState("");
+  const [showMoc, setShowMoc] = useState(false);
+  const [mocContent, setMocContent] = useState("");
+  const [loadingMoc, setLoadingMoc] = useState(false);
 
   const handleSubmit = (challengeId) => {
     if (!responseText.trim()) return;
@@ -15,10 +18,27 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
     setResponseText("");
   };
 
+  const handleToggleMoc = async () => {
+    if (!showMoc && !mocContent) {
+      setLoadingMoc(true);
+      try {
+        const res = await fetch("http://localhost:8000/api/vault/moc").then(r => r.json());
+        setMocContent(res.markdown || "No Map of Content generated yet.");
+      } catch (e) {
+        setMocContent("Failed to load Map of Content.");
+      } finally {
+        setLoadingMoc(false);
+      }
+    }
+    setShowMoc(!showMoc);
+  };
+
   const isCompliant = codeAudit?.status === "compliant";
   const complianceScore = codeAudit?.compliance_score ?? 100;
   const verifiedClaims = codeAudit?.verified_claims || [];
   const driftsFound = codeAudit?.drifts_found || [];
+  const vaultHealth = codeAudit?.vault_health;
+  const isVaultHealthy = (vaultHealth?.vault_health_score ?? 100) >= 80;
 
   return (
     <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "32px 24px" }}>
@@ -125,6 +145,127 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
                 • <strong>{drift.file}</strong>: {drift.issue}
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Obsidian Vault Health & Wikilink Integrity Card (LLM Wiki Linter) */}
+      <div className="glass-panel" style={{
+        padding: "22px 26px",
+        marginBottom: "28px",
+        background: "var(--bg-elevated)",
+        border: isVaultHealthy ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid rgba(239, 68, 68, 0.4)"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Compass size={18} style={{ color: isVaultHealthy ? "var(--emerald-wisdom)" : "var(--crimson-challenge)" }} />
+            <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "var(--text-primary)" }}>
+              Obsidian Vault Health & Wikilink Integrity (LLM Wiki Linter)
+            </h3>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{
+              padding: "4px 10px",
+              borderRadius: "6px",
+              fontSize: "0.78rem",
+              fontWeight: "700",
+              background: isVaultHealthy ? "var(--emerald-bg)" : "var(--crimson-bg)",
+              color: isVaultHealthy ? "var(--emerald-wisdom)" : "var(--crimson-challenge)",
+              border: `1px solid ${isVaultHealthy ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
+            }}>
+              {vaultHealth?.vault_health_score ?? 100}% Vault Health
+            </span>
+
+            <button
+              onClick={handleToggleMoc}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "5px 12px",
+                borderRadius: "6px",
+                border: "1px solid var(--accent-primary)",
+                background: "var(--accent-light)",
+                color: "var(--accent-primary)",
+                fontSize: "0.76rem",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.15s ease"
+              }}
+            >
+              <BookOpen size={12} />
+              <span>{loadingMoc ? "Loading..." : showMoc ? "Hide Map of Content" : "View Map of Content (MOC)"}</span>
+            </button>
+          </div>
+        </div>
+
+        <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
+          Analyzes bidirectional <code>[[wikilinks]]</code> across notes, detects orphan thoughts with zero incoming links, and keeps your autonomous <code>Map_of_Content.md</code> index synced for Obsidian Graph View.
+        </p>
+
+        {/* 4 Health Metrics */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px", marginBottom: showMoc ? "16px" : "0" }}>
+          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
+            <Link2 size={15} style={{ color: "var(--accent-primary)" }} />
+            <div>
+              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-primary)" }}>{vaultHealth?.total_wikilinks ?? 0} Active Links</div>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Bidirectional [[wikilinks]]</div>
+            </div>
+          </div>
+
+          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
+            <CheckCircle2 size={15} style={{ color: (vaultHealth?.broken_wikilinks?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--crimson-challenge)" }} />
+            <div>
+              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: (vaultHealth?.broken_wikilinks?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--crimson-challenge)" }}>
+                {vaultHealth?.broken_wikilinks?.length ?? 0} Broken Links
+              </div>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Missing target files</div>
+            </div>
+          </div>
+
+          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
+            <Network size={15} style={{ color: (vaultHealth?.orphan_notes?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--amber-fact)" }} />
+            <div>
+              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: (vaultHealth?.orphan_notes?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--amber-fact)" }}>
+                {vaultHealth?.orphan_notes?.length ?? 0} Orphan Notes
+              </div>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Nodes with 0 links</div>
+            </div>
+          </div>
+
+          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
+            <BookOpen size={15} style={{ color: "var(--emerald-wisdom)" }} />
+            <div>
+              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-primary)" }}>
+                {vaultHealth?.moc_present ? "MOC: Active" : "MOC: Pending"}
+              </div>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Map_of_Content.md</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Expandable Map of Content Markdown Viewer */}
+        {showMoc && (
+          <div style={{
+            marginTop: "16px",
+            padding: "16px 20px",
+            borderRadius: "8px",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-subtle)",
+            fontSize: "0.85rem",
+            color: "var(--text-secondary)",
+            lineHeight: "1.6",
+            whiteSpace: "pre-wrap",
+            fontFamily: "monospace",
+            maxHeight: "340px",
+            overflowY: "auto"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", fontSize: "0.76rem", color: "var(--text-tertiary)", borderBottom: "1px solid var(--border-subtle)", paddingBottom: "6px" }}>
+              <span>📄 Map_of_Content.md (Live Obsidian File)</span>
+              <span>Obsidian LLM Wiki Pattern</span>
+            </div>
+            {mocContent}
           </div>
         )}
       </div>
