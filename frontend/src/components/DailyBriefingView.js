@@ -1,12 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Moon, ArrowRight, ShieldCheck, Zap, Globe, RefreshCw, Clock, History, CheckCircle2 } from "lucide-react";
+import { Sparkles, Moon, ArrowRight, ShieldCheck, Zap, Globe, RefreshCw, Clock, History, CheckCircle2, Send, Bell, ExternalLink, AlertCircle } from "lucide-react";
 
-export default function DailyBriefingView({ briefing, onTriggerReplay, isReplaying, schedulerStatus, onSimulateSchedule }) {
+export default function DailyBriefingView({ briefing, onTriggerReplay, isReplaying, schedulerStatus, onSimulateSchedule, onTestDispatch }) {
   const isCronActive = schedulerStatus?.is_enabled ?? true;
   const timeUntilSleep = schedulerStatus?.time_until_sleep_cycle || "12h 4m";
   const recentRuns = schedulerStatus?.recent_runs || [];
+
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [isDispatching, setIsDispatching] = useState(false);
+  const [dispatchResult, setDispatchResult] = useState(null);
+
+  const handleSendDispatch = async () => {
+    if (!onTestDispatch) return;
+    setIsDispatching(true);
+    setDispatchResult(null);
+    try {
+      const res = await onTestDispatch(webhookUrl || undefined);
+      setDispatchResult(res);
+    } catch (err) {
+      setDispatchResult({ status: "failed", error: err.message });
+    } finally {
+      setIsDispatching(false);
+    }
+  };
 
   return (
     <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "32px 24px" }}>
@@ -133,6 +151,105 @@ export default function DailyBriefingView({ briefing, onTriggerReplay, isReplayi
         <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-tertiary)" }}>
           <History size={14} />
           <span>Total Autonomous Executions: <strong>{schedulerStatus?.total_autonomous_runs ?? 0}</strong></span>
+        </div>
+      </div>
+
+      {/* Morning Dispatch Webhook Trigger (Khoj-style notification integration) */}
+      <div className="glass-panel" style={{
+        padding: "16px 22px",
+        marginBottom: "24px",
+        background: "var(--bg-elevated)",
+        border: "1px solid var(--border-subtle)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "12px"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
+            <div style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "8px",
+              background: "rgba(99, 102, 241, 0.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--accent-primary)"
+            }}>
+              <Bell size={15} />
+            </div>
+            <div>
+              <div style={{ fontSize: "0.86rem", fontWeight: "700", color: "var(--text-primary)" }}>
+                Morning Dispatch Webhook
+              </div>
+              <div style={{ fontSize: "0.76rem", color: "var(--text-tertiary)" }}>
+                Dispatches your 03:00 AM executive brief to Discord, Slack, or Telegram as rich embeds
+              </div>
+            </div>
+          </div>
+
+          {dispatchResult && (
+            <div style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 10px",
+              borderRadius: "20px",
+              fontSize: "0.76rem",
+              fontWeight: "600",
+              background: dispatchResult.status === "delivered" ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)",
+              color: dispatchResult.status === "delivered" ? "var(--emerald-wisdom)" : "var(--crimson-challenge)",
+              border: `1px solid ${dispatchResult.status === "delivered" ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
+            }}>
+              {dispatchResult.status === "delivered" ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
+              <span>
+                {dispatchResult.status === "delivered" 
+                  ? `Delivered (${dispatchResult.code || "HTTP 200"})` 
+                  : `Failed: ${dispatchResult.error || "Unknown error"}`}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <input
+            type="text"
+            value={webhookUrl}
+            onChange={(e) => setWebhookUrl(e.target.value)}
+            placeholder="Custom Discord / Slack Webhook URL (leave empty to use default mock)"
+            style={{
+              flex: 1,
+              minWidth: "260px",
+              padding: "8px 12px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-subtle)",
+              background: "var(--bg-card)",
+              color: "var(--text-primary)",
+              fontSize: "0.82rem",
+              fontFamily: "monospace"
+            }}
+          />
+          <button
+            onClick={handleSendDispatch}
+            disabled={isDispatching}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "7px",
+              padding: "8px 16px",
+              borderRadius: "8px",
+              border: "1px solid var(--accent-primary)",
+              background: "var(--accent-light)",
+              color: "var(--accent-primary)",
+              fontSize: "0.82rem",
+              fontWeight: "700",
+              cursor: isDispatching ? "not-allowed" : "pointer",
+              transition: "all 0.15s ease"
+            }}
+          >
+            <Send size={13} className={isDispatching ? "animate-spin" : ""} />
+            <span>{isDispatching ? "Dispatching..." : "Send Test Briefing Webhook"}</span>
+          </button>
         </div>
       </div>
 

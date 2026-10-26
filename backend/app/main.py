@@ -82,6 +82,16 @@ class MemoryCreateRequest(BaseModel):
     tier: str = "tier_working"
     tags: Optional[List[str]] = None
 
+class IngestFolderRequest(BaseModel):
+    folder_path: str
+
+class DispatchTestRequest(BaseModel):
+    webhook_url: Optional[str] = None
+
+class DeepResearchRequest(BaseModel):
+    topic: str
+    claim: Optional[str] = ""
+
 # ---------------------------------------------------------------------------
 # API Endpoints
 # ---------------------------------------------------------------------------
@@ -195,6 +205,28 @@ async def ingest_file_endpoint(file: UploadFile = File(...)):
         tags=["uploaded_file", modality]
     )
     return result
+
+@app.post("/api/ingest/folder")
+def ingest_folder_endpoint(req: IngestFolderRequest):
+    """Recursively scans and bulk-ingests a local folder or Obsidian vault."""
+    try:
+        return ingest_pipeline.ingest_folder(req.folder_path)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error in folder ingest: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/dispatch/test")
+def test_dispatch_endpoint(req: DispatchTestRequest):
+    """Sends a live test notification to Discord or webhook."""
+    from app.dispatcher import dispatcher
+    return dispatcher.test_ping(webhook_url=req.webhook_url)
+
+@app.post("/api/research/deep")
+def deep_research_endpoint(req: DeepResearchRequest):
+    """Performs iterative multi-query Tavily research loop and caches ground truth in world_brain.db."""
+    return tavily_client.deep_research(topic=req.topic, claim=req.claim or "")
 
 # 2. Query / RAG / Arbitrage Endpoint
 @app.post("/api/query")

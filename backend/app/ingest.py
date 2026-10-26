@@ -127,4 +127,96 @@ class KnowledgeIngestionPipeline:
             source_path=url
         )
 
+    def ingest_folder(self, folder_path: str) -> Dict[str, Any]:
+        """Recursively scans and bulk-ingests a local directory or Obsidian vault."""
+        path = Path(folder_path).expanduser().resolve()
+        if not path.exists() or not path.is_dir():
+            raise FileNotFoundError(f"Directory not found: {folder_path}")
+
+        supported_exts = {".md", ".txt", ".json", ".png", ".jpg", ".jpeg", ".webp", ".pdf"}
+        scanned_files = []
+        for root, dirs, files in os.walk(path):
+            dirs[:] = [d for d in dirs if not d.startswith(".")]
+            for f in files:
+                ext = os.path.splitext(f)[1].lower()
+                if ext in supported_exts:
+                    scanned_files.append(Path(root) / f)
+
+        ingested = []
+        skipped = 0
+        challenges_found = 0
+
+        for file_path in scanned_files:
+            try:
+                ext = file_path.suffix.lower()
+                rel_path = file_path.relative_to(path).as_posix()
+                stem = file_path.stem
+
+                if ext in [".md", ".txt", ".json"]:
+                    content = file_path.read_text(encoding="utf-8", errors="ignore")
+                    if not content.strip():
+                        skipped += 1
+                        continue
+
+                    lines = content.strip().split("\n")
+                    title = stem
+                    for line in lines:
+                        if line.startswith("# "):
+                            title = line.replace("# ", "").strip()
+                            break
+
+                    modality = "decision" if any(k in stem.lower() for k in ["adr", "decision", "rfc"]) else "note"
+                    res = self.ingest_text(
+                        title=title,
+                        content=content,
+                        modality=modality,
+                        tags=["vault_import", modality],
+                        source_path=str(file_path)
+                    )
+                    ingested.append({"title": title, "path": rel_path, "modality": modality})
+                    if res.get("adversarial_challenge"):
+                        challenges_found += 1
+
+                elif ext in [".png", ".jpg", ".jpeg", ".webp"]:
+                    from app.media_extractor import extract_image_content
+                    bytes_data = file_path.read_bytes()
+                    title, img_content, _ = extract_image_content(bytes_data, filename_or_url=stem)
+                    res = self.ingest_text(
+                        title=title,
+                        content=img_content,
+                        modality="image",
+                        tags=["vault_import", "image"],
+                        source_path=str(file_path)
+                    )
+                    ingested.append({"title": title, "path": rel_path, "modality": "image"})
+                    if res.get("adversarial_challenge"):
+                        challenges_found += 1
+
+                elif ext == ".pdf":
+                    bytes_data = file_path.read_bytes()
+                    title, pdf_content, _ = extract_pdf_content(bytes_data, filename=stem)
+                    res = self.ingest_text(
+                        title=title,
+                        content=pdf_content,
+                        modality="pdf",
+                        tags=["vault_import", "pdf"],
+                        source_path=str(file_path)
+                    )
+                    ingested.append({"title": title, "path": rel_path, "modality": "pdf"})
+                    if res.get("adversarial_challenge"):
+                        challenges_found += 1
+
+            except Exception as e:
+                logger.warning(f"Error ingesting file {file_path}: {e}")
+                skipped += 1
+
+        return {
+            "folder": str(path),
+            "scanned_count": len(scanned_files),
+            "ingested_count": len(ingested),
+            "skipped_count": skipped,
+            "challenges_flagged": challenges_found,
+            "items": ingested[:20]
+        }
+
 ingest_pipeline = KnowledgeIngestionPipeline()

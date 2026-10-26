@@ -56,13 +56,20 @@ class AutonomousReplayScheduler:
         self.last_run = datetime.now()
         self.total_runs += 1
 
+        # Dispatch morning briefing to webhook if configured
+        dispatch_res = None
+        if result.get("status") == "success" and result.get("briefing"):
+            from app.dispatcher import dispatcher
+            dispatch_res = await asyncio.to_thread(dispatcher.dispatch_briefing, result["briefing"])
+
         run_record = {
             "timestamp": self.last_run.isoformat(),
             "trigger": trigger_source,
             "status": result.get("status"),
             "headline": result.get("headline"),
             "replayed_atoms": result.get("replayed_atoms", 0),
-            "duration_sec": duration_sec
+            "duration_sec": duration_sec,
+            "dispatch": dispatch_res
         }
         self.history.append(run_record)
         return run_record

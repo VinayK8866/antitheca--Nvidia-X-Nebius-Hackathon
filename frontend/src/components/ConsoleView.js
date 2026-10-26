@@ -1,20 +1,20 @@
-"use client";
-
 import { useState, useRef } from "react";
-import { Send, Plus, Link2, FileText, Sparkles, Brain, CheckCircle, Lightbulb, Clock, Upload, Eye, Image as ImageIcon, AlertTriangle } from "lucide-react";
+import { Send, Plus, Link2, FileText, Sparkles, Brain, CheckCircle, Lightbulb, Clock, Upload, Eye, Image as ImageIcon, AlertTriangle, FolderOpen, Globe, Search, ExternalLink } from "lucide-react";
 
-export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onIngestFile }) {
+export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onIngestFile, onIngestFolder, onDeepResearch }) {
   // Chat state
   const [queryText, setQueryText] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [isQuerying, setIsQuerying] = useState(false);
+  const [isResearching, setIsResearching] = useState(false);
 
   // Ingest state
-  const [ingestType, setIngestType] = useState("file"); // 'note', 'url', 'file'
+  const [ingestType, setIngestType] = useState("vault"); // 'vault', 'file', 'note', 'url'
   const [noteTitle, setNoteTitle] = useState("");
   const [noteContent, setNoteContent] = useState("");
   const [noteModality, setNoteModality] = useState("note");
   const [urlInput, setUrlInput] = useState("");
+  const [folderPath, setFolderPath] = useState("/home/user/Private_View/Vinay/Nebius Nvidia Hackathon/backend/demo_vault");
   const [selectedFile, setSelectedFile] = useState(null);
   const [ingestStatus, setIngestStatus] = useState(null);
   const [isIngesting, setIsIngesting] = useState(false);
@@ -52,6 +52,38 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
     }
   };
 
+  const handleTriggerDeepResearch = async () => {
+    if (!queryText.trim() || isResearching) return;
+    const userQ = queryText.trim();
+    setQueryText("");
+    setIsResearching(true);
+
+    const userMessage = { role: "user", text: `[Deep Research] ${userQ}` };
+    setChatHistory((prev) => [...prev, userMessage]);
+
+    try {
+      const res = await onDeepResearch(userQ);
+      const researchMessage = {
+        role: "assistant",
+        text: res.synthesis || "Deep research complete.",
+        isDeepResearch: true,
+        topic: res.topic,
+        subqueries: res.subqueries || [],
+        sources: res.sources || [],
+        confidence: res.confidence_score,
+        model: "NVIDIA Nemotron + Tavily Multi-Query"
+      };
+      setChatHistory((prev) => [...prev, researchMessage]);
+    } catch (err) {
+      setChatHistory((prev) => [
+        ...prev,
+        { role: "assistant", text: "Deep research failed: " + err.message }
+      ]);
+    } finally {
+      setIsResearching(false);
+    }
+  };
+
   const handleLoadSampleSlide = async () => {
     try {
       setIsIngesting(true);
@@ -74,13 +106,38 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
     }
   };
 
+  const handleIngestDemoVault = async () => {
+    const demoPath = "/home/user/Private_View/Vinay/Nebius Nvidia Hackathon/backend/demo_vault";
+    setFolderPath(demoPath);
+    setIsIngesting(true);
+    setIngestStatus({ type: "info", msg: "Scanning and bulk-ingesting sample engineering vault..." });
+    try {
+      const res = await onIngestFolder(demoPath);
+      setIngestStatus({
+        type: "success",
+        msg: `Obsidian Vault Ingested! Scanned ${res.scanned_count} files, indexed ${res.ingested_count} notes & ADRs into knowledge graph.`
+      });
+    } catch (err) {
+      setIngestStatus({ type: "error", msg: "Failed to ingest vault: " + err.message });
+    } finally {
+      setIsIngesting(false);
+    }
+  };
+
   const handleIngest = async (e) => {
     e.preventDefault();
     setIsIngesting(true);
     setIngestStatus(null);
 
     try {
-      if (ingestType === "note") {
+      if (ingestType === "vault") {
+        if (!folderPath) return;
+        const res = await onIngestFolder(folderPath);
+        setIngestStatus({
+          type: "success",
+          msg: `Bulk Vault Ingested! ${res.ingested_count} files indexed from ${res.folder}.`
+        });
+      } else if (ingestType === "note") {
         if (!noteTitle || !noteContent) return;
         const res = await onIngestText(noteTitle, noteContent, noteModality);
         setIngestStatus({
@@ -134,8 +191,29 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
           <h2 style={{ fontSize: "1.1rem", fontWeight: "700" }}>Ingest Knowledge Atom</h2>
         </div>
 
-        {/* Tab Selector (3 Modalities) */}
+        {/* Tab Selector (4 Modalities) */}
         <div style={{ display: "flex", gap: "4px", background: "var(--bg-elevated)", padding: "4px", borderRadius: "8px", marginBottom: "18px" }}>
+          <button
+            onClick={() => setIngestType("vault")}
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "4px",
+              padding: "7px 2px",
+              borderRadius: "6px",
+              border: "none",
+              background: ingestType === "vault" ? "var(--bg-secondary)" : "transparent",
+              color: ingestType === "vault" ? "var(--accent-primary)" : "var(--text-secondary)",
+              fontWeight: "600",
+              fontSize: "0.76rem",
+              cursor: "pointer"
+            }}
+          >
+            <FolderOpen size={13} />
+            <span>Vault Bulk</span>
+          </button>
           <button
             onClick={() => setIngestType("file")}
             style={{
@@ -143,18 +221,18 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "5px",
-              padding: "7px 4px",
+              gap: "4px",
+              padding: "7px 2px",
               borderRadius: "6px",
               border: "none",
               background: ingestType === "file" ? "var(--bg-secondary)" : "transparent",
               color: ingestType === "file" ? "var(--accent-primary)" : "var(--text-secondary)",
               fontWeight: "600",
-              fontSize: "0.78rem",
+              fontSize: "0.76rem",
               cursor: "pointer"
             }}
           >
-            <Eye size={14} />
+            <Eye size={13} />
             <span>Slide / VL</span>
           </button>
           <button
@@ -164,18 +242,18 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "5px",
-              padding: "7px 4px",
+              gap: "4px",
+              padding: "7px 2px",
               borderRadius: "6px",
               border: "none",
               background: ingestType === "note" ? "var(--bg-secondary)" : "transparent",
               color: ingestType === "note" ? "var(--accent-primary)" : "var(--text-secondary)",
               fontWeight: "600",
-              fontSize: "0.78rem",
+              fontSize: "0.76rem",
               cursor: "pointer"
             }}
           >
-            <FileText size={14} />
+            <FileText size={13} />
             <span>Note / ADR</span>
           </button>
           <button
@@ -185,24 +263,85 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "5px",
-              padding: "7px 4px",
+              gap: "4px",
+              padding: "7px 2px",
               borderRadius: "6px",
               border: "none",
               background: ingestType === "url" ? "var(--bg-secondary)" : "transparent",
               color: ingestType === "url" ? "var(--accent-primary)" : "var(--text-secondary)",
               fontWeight: "600",
-              fontSize: "0.78rem",
+              fontSize: "0.76rem",
               cursor: "pointer"
             }}
           >
-            <Link2 size={14} />
+            <Link2 size={13} />
             <span>URL / Reel</span>
           </button>
         </div>
 
         {/* Ingest Form */}
         <form onSubmit={handleIngest} style={{ display: "flex", flexDirection: "column", gap: "14px", flex: 1 }}>
+          {ingestType === "vault" && (
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <label style={{ fontSize: "0.78rem", fontWeight: "600", color: "var(--text-secondary)" }}>
+                  Local Directory / Obsidian Vault Path
+                </label>
+                <span style={{ fontSize: "0.7rem", color: "var(--emerald-wisdom)", fontWeight: "600" }}>
+                  Khoj-Style Bulk Sync
+                </span>
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  required
+                  value={folderPath}
+                  onChange={(e) => setFolderPath(e.target.value)}
+                  placeholder="/absolute/path/to/notes or ./demo_vault"
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--border-strong)",
+                    background: "var(--bg-input)",
+                    color: "var(--text-primary)",
+                    fontSize: "0.82rem",
+                    outline: "none"
+                  }}
+                />
+              </div>
+
+              {/* Quick 1-Click Demo Vault Button */}
+              <button
+                type="button"
+                onClick={handleIngestDemoVault}
+                disabled={isIngesting}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border-subtle)",
+                  background: "var(--bg-elevated)",
+                  color: "var(--accent-primary)",
+                  fontSize: "0.78rem",
+                  fontWeight: "600",
+                  cursor: isIngesting ? "not-allowed" : "pointer"
+                }}
+              >
+                <Sparkles size={13} />
+                <span>Load Sample Engineering Vault (5 Notes & ADRs)</span>
+              </button>
+
+              <div style={{ fontSize: "0.78rem", color: "var(--text-tertiary)", lineHeight: "1.4" }}>
+                Recursively scans and embeds Markdown files, architecture decision records, and PDFs into your sovereign personal brain in seconds.
+              </div>
+            </div>
+          )}
+
           {ingestType === "file" && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -487,6 +626,84 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                   {msg.text}
                 </div>
 
+                {/* Deep Research Multi-Source Card (Assistant only) */}
+                {Boolean(msg.isDeepResearch) && (
+                  <div style={{
+                    marginTop: "10px",
+                    padding: "14px 16px",
+                    borderRadius: "10px",
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border-strong)",
+                    boxShadow: "var(--shadow-sm)"
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--cyan-tavily)", fontWeight: "700", fontSize: "0.85rem" }}>
+                        <Globe size={15} />
+                        <span>Tavily Iterative Research Verification</span>
+                      </div>
+                      <span style={{
+                        padding: "2px 8px",
+                        borderRadius: "6px",
+                        fontSize: "0.72rem",
+                        fontWeight: "700",
+                        background: "var(--emerald-bg)",
+                        color: "var(--emerald-wisdom)"
+                      }}>
+                        {msg.confidence ?? 85}% Empirical Confidence
+                      </span>
+                    </div>
+
+                    {/* Subqueries Pills */}
+                    {Boolean(msg.subqueries && msg.subqueries.length > 0) && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "10px" }}>
+                        {msg.subqueries.map((sq, sqIdx) => (
+                          <span key={sqIdx} style={{
+                            padding: "2px 7px",
+                            borderRadius: "4px",
+                            fontSize: "0.7rem",
+                            background: "var(--bg-elevated)",
+                            color: "var(--text-secondary)"
+                          }}>
+                            🔍 {sq}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Verified Sources */}
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-tertiary)", marginBottom: "6px", fontWeight: "600" }}>
+                      Cross-Referenced Live Web Evidence ({msg.sources?.length || 0} sources):
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      {msg.sources?.slice(0, 3).map((s, sIdx) => (
+                        <a
+                          key={sIdx}
+                          href={s.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            padding: "6px 10px",
+                            borderRadius: "6px",
+                            background: "var(--bg-elevated)",
+                            fontSize: "0.76rem",
+                            color: "var(--text-primary)",
+                            textDecoration: "none",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "8px"
+                          }}
+                        >
+                          <span style={{ fontWeight: "600", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                            {s.title}
+                          </span>
+                          <ExternalLink size={12} style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Proactive Knowledge Arbitrage Card (Assistant only) */}
                 {Boolean(msg.arbitrage && msg.arbitrage.length > 0) && (
                   <div style={{
@@ -513,9 +730,7 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                 {msg.role === "assistant" && msg.model && (
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px", fontSize: "0.72rem", color: "var(--text-tertiary)" }}>
                     <Clock size={11} />
-                    <span>{msg.latency}ms</span>
-                    <span>•</span>
-                    <span>{msg.model}</span>
+                    <span>{msg.latency ? `${msg.latency}ms • ` : ""}{msg.model}</span>
                   </div>
                 )}
               </div>
@@ -524,13 +739,13 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
         </div>
 
         {/* Input Bar */}
-        <form onSubmit={handleSendQuery} style={{ display: "flex", gap: "10px" }}>
+        <form onSubmit={handleSendQuery} style={{ display: "flex", gap: "8px" }}>
           <input
             type="text"
             value={queryText}
             onChange={(e) => setQueryText(e.target.value)}
-            placeholder="Ask Engram, challenge an assumption, or query your second brain..."
-            disabled={isQuerying}
+            placeholder="Ask Engram, challenge an assumption, or research web consensus..."
+            disabled={isQuerying || isResearching}
             style={{
               flex: 1,
               padding: "12px 16px",
@@ -542,17 +757,43 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
               outline: "none"
             }}
           />
+
+          {/* Deep Research Button */}
+          <button
+            type="button"
+            onClick={handleTriggerDeepResearch}
+            disabled={isResearching || isQuerying || !queryText.trim()}
+            title="Perform Iterative Multi-Query Deep Research with Tavily"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "0 14px",
+              borderRadius: "10px",
+              border: "1px solid rgba(6, 182, 212, 0.4)",
+              background: "var(--bg-elevated)",
+              color: "var(--cyan-tavily)",
+              fontSize: "0.82rem",
+              fontWeight: "600",
+              cursor: isResearching || isQuerying || !queryText.trim() ? "not-allowed" : "pointer",
+              opacity: isResearching || isQuerying || !queryText.trim() ? 0.6 : 1
+            }}
+          >
+            <Globe size={15} />
+            <span>{isResearching ? "Researching..." : "Deep Research"}</span>
+          </button>
+
           <button
             type="submit"
-            disabled={isQuerying || !queryText.trim()}
+            disabled={isQuerying || isResearching || !queryText.trim()}
             style={{
-              padding: "0 20px",
+              padding: "0 18px",
               borderRadius: "10px",
               border: "none",
               background: "var(--accent-primary)",
               color: "#ffffff",
-              cursor: isQuerying || !queryText.trim() ? "not-allowed" : "pointer",
-              opacity: isQuerying || !queryText.trim() ? 0.6 : 1,
+              cursor: isQuerying || isResearching || !queryText.trim() ? "not-allowed" : "pointer",
+              opacity: isQuerying || isResearching || !queryText.trim() ? 0.6 : 1,
               display: "flex",
               alignItems: "center",
               justifyContent: "center"

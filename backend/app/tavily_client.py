@@ -68,6 +68,61 @@ class TavilyResearchClient:
             "synthesized_note": f"Automated web synthesis for '{topic}' based on {len(evidence_items)} sources."
         }
 
+    def deep_research(self, topic: str, claim: str = "") -> Dict[str, Any]:
+        """Performs iterative multi-query web research: decomposing into subqueries, querying in parallel, and synthesizing evidence."""
+        subqueries = [
+            f"{topic} empirical benchmarks and production reality",
+            f"{topic} failure modes and counter-arguments",
+            f"{topic} consensus best practices"
+        ]
+        if claim:
+            subqueries.insert(0, f"fact check: {claim[:80]}")
+            subqueries = subqueries[:3]
+
+        all_sources = {}
+        for sq in subqueries:
+            results = self.search(sq, max_results=2)
+            for r in results:
+                url = r.get("url", "")
+                if url and url not in all_sources:
+                    all_sources[url] = {
+                        "title": r.get("title", "External Source"),
+                        "url": url,
+                        "snippet": r.get("content", "")[:350],
+                        "query": sq
+                    }
+
+        sources_list = list(all_sources.values())
+
+        # Synthesize with LLM if available
+        synthesis = ""
+        try:
+            from app.llm_client import llm_client
+            snippets_text = "\n".join([f"- [{s['title']}]: {s['snippet']}" for s in sources_list[:5]])
+            synth_prompt = (
+                f"Topic: {topic}\nClaim to stress-test: {claim}\n\n"
+                f"External Web Evidence:\n{snippets_text}\n\n"
+                f"Provide a concise, rigorous 2-paragraph synthesis comparing the claim against empirical evidence. "
+                f"Include an objective consensus verdict and state confidence percentage."
+            )
+            synthesis = llm_client.predict_fast(
+                synth_prompt,
+                system_prompt="You are an adversarial research auditor. Assess evidence strictly based on production realities and engineering rigor."
+            )
+        except Exception as e:
+            logger.warning(f"Error synthesizing deep research: {e}")
+            synthesis = f"External evidence compiled across {len(sources_list)} sources for '{topic}'."
+
+        return {
+            "topic": topic,
+            "claim": claim,
+            "subqueries": subqueries,
+            "total_sources": len(sources_list),
+            "sources": sources_list,
+            "synthesis": synthesis,
+            "confidence_score": 85 if len(sources_list) >= 3 else 60
+        }
+
     def _cache_results(self, query: str, results: List[Dict[str, Any]]):
         """Persists external web evidence into world_brain.db for provenance tracking."""
         try:

@@ -159,6 +159,43 @@ export default function Home() {
     return result;
   };
 
+  const handleIngestFolder = async (folderPath) => {
+    const resp = await fetch(`${BACKEND_URL}/api/ingest/folder`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ folder_path: folderPath })
+    });
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      throw new Error(errData.detail || "Folder ingestion failed");
+    }
+    const result = await resp.json();
+    await refreshAll();
+    return result;
+  };
+
+  const handleTestDispatch = async (webhookUrl) => {
+    const resp = await fetch(`${BACKEND_URL}/api/dispatch/test`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ webhook_url: webhookUrl })
+    });
+    if (!resp.ok) throw new Error("Dispatch test failed");
+    return await resp.json();
+  };
+
+  const handleDeepResearch = async (topic, claim = "") => {
+    const resp = await fetch(`${BACKEND_URL}/api/research/deep`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, claim })
+    });
+    if (!resp.ok) throw new Error("Deep research query failed");
+    const result = await resp.json();
+    await refreshAll();
+    return result;
+  };
+
   const handleRespondToChallenge = async (challengeId, userResponse, action) => {
     try {
       await fetch(`${BACKEND_URL}/api/challenges/${challengeId}/respond`, {
@@ -189,6 +226,7 @@ export default function Home() {
             isReplaying={isReplaying}
             schedulerStatus={schedulerStatus}
             onSimulateSchedule={handleTriggerScheduleSimulation}
+            onTestDispatch={handleTestDispatch}
           />
         )}
         {activeTab === "graph" && (
@@ -211,6 +249,8 @@ export default function Home() {
             onIngestText={handleIngestText}
             onIngestUrl={handleIngestUrl}
             onIngestFile={handleIngestFile}
+            onIngestFolder={handleIngestFolder}
+            onDeepResearch={handleDeepResearch}
           />
         )}
       </main>
