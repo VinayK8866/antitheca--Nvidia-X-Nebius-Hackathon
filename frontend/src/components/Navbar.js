@@ -1,9 +1,9 @@
 "use client";
 
-import { Brain, Cpu, Sparkles, Network, AlertTriangle, MessageSquareCode, Globe2, Clock, Eye } from "lucide-react";
+import { Sparkles, Network, AlertTriangle, MessageSquareCode, Cpu, Clock, Zap } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
-export default function Navbar({ activeTab, setActiveTab, systemStatus, schedulerStatus }) {
+export default function Navbar({ activeTab, setActiveTab, systemStatus, schedulerStatus, onTriggerReplay, isReplaying }) {
   const tabs = [
     { id: "replay", label: "Cognitive Replay", icon: Sparkles },
     { id: "graph", label: "Knowledge Graph", icon: Network },
@@ -12,129 +12,126 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus, schedule
   ];
 
   const isCronActive = schedulerStatus?.is_enabled ?? true;
-  const timeUntilSleep = schedulerStatus?.time_until_sleep_cycle || "12h";
+  const timeUntilSleep = schedulerStatus?.time_until_sleep_cycle || "12h 4m";
 
   return (
     <header style={{
       position: "sticky",
       top: 0,
       zIndex: 50,
-      background: "var(--bg-card)",
-      backdropFilter: "var(--glass-blur)",
-      borderBottom: "1px solid var(--border-subtle)",
-      padding: "12px 24px",
+      background: "var(--bg-canvas)",
+      borderBottom: "1px solid var(--border-hairline)",
+      padding: "0 28px",
+      height: "64px",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      transition: "background-color 0.2s ease"
+      transition: "background-color 0.2s ease, border-color 0.2s ease"
     }}>
-      {/* Brand & Powered By */}
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      {/* Brand & Engram Architectural Logo */}
+      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+        <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", color: "inherit" }}>
+          {/* Engram / AntiTheca Geometric Mark */}
           <div style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "10px",
-            background: "var(--accent-gradient)",
+            width: "32px",
+            height: "32px",
+            borderRadius: "7px",
+            background: "var(--btn-primary-bg)",
+            color: "var(--btn-primary-text)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#ffffff",
-            boxShadow: "var(--shadow-glow)"
+            fontWeight: "900",
+            fontSize: "1.05rem",
+            letterSpacing: "-0.05em",
+            boxShadow: "var(--shadow-sm)"
           }}>
-            <Brain size={22} />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 3v6" />
+              <path d="M12 15v6" />
+              <path d="M3 12h6" />
+              <path d="M15 12h6" />
+              <path d="m5.6 5.6 4.3 4.3" />
+              <path d="m14.1 14.1 4.3 4.3" />
+              <path d="m5.6 18.4 4.3-4.3" />
+              <path d="m14.1 9.9 4.3-4.3" />
+            </svg>
           </div>
+
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "1.15rem", fontWeight: "700", letterSpacing: "-0.02em" }}>AntiTheca</span>
               <span style={{
-                fontSize: "0.65rem",
+                fontFamily: "var(--font-geist-sans), 'Inter', sans-serif",
+                fontSize: "1.05rem",
+                fontWeight: "700",
+                letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                padding: "2px 6px",
-                borderRadius: "4px",
-                background: "var(--accent-light)",
-                color: "var(--accent-primary)",
-                fontWeight: "700"
+                color: "var(--text-primary)"
               }}>
-                PERSONAL AI
+                ANTITHECA
+              </span>
+              <span className="engram-mono-badge" style={{ fontSize: "0.62rem", padding: "1px 6px" }}>
+                LABS
               </span>
             </div>
-            <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>
-              The AI That Thinks While You Sleep
+            <div style={{
+              fontFamily: "var(--font-geist-mono), 'JetBrains Mono', monospace",
+              fontSize: "0.65rem",
+              color: "var(--text-muted)",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase"
+            }}>
+              Architecting Cognition
             </div>
           </div>
-        </div>
+        </a>
 
-        {/* Live Infrastructure Badges */}
+        {/* Status Telemetry Pill (Engram Clinical Style) */}
         <div style={{
           display: "flex",
           alignItems: "center",
-          gap: "8px",
+          gap: "12px",
           marginLeft: "8px",
-          paddingLeft: "14px",
-          borderLeft: "1px solid var(--border-subtle)",
-          flexWrap: "wrap"
+          paddingLeft: "16px",
+          borderLeft: "1px solid var(--border-hairline)"
         }}>
           <div style={{
             display: "flex",
             alignItems: "center",
-            gap: "5px",
-            padding: "4px 8px",
-            borderRadius: "6px",
-            background: "var(--bg-elevated)",
-            fontSize: "0.73rem",
-            color: "var(--text-secondary)"
+            gap: "7px",
+            fontSize: "0.75rem",
+            color: "var(--text-secondary)",
+            fontFamily: "var(--font-geist-mono), 'JetBrains Mono', monospace"
           }}>
-            <Cpu size={13} style={{ color: "var(--emerald-wisdom)" }} />
-            <span>Nebius: <strong>Nemotron Ultra 550B</strong></span>
+            <div className="live-pulse-dot" />
+            <span>NVIDIA Nemotron 3 Ultra 550B</span>
           </div>
+
           <div style={{
-            display: "flex",
+            display: "none",
             alignItems: "center",
-            gap: "5px",
-            padding: "4px 8px",
-            borderRadius: "6px",
-            background: "var(--bg-elevated)",
-            fontSize: "0.73rem",
-            color: "var(--text-secondary)"
-          }}>
-            <Eye size={13} style={{ color: "var(--accent-primary)" }} />
-            <span>VL: <strong>Super-VL 3.5</strong></span>
-          </div>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
-            padding: "4px 8px",
-            borderRadius: "6px",
-            background: "var(--bg-elevated)",
-            fontSize: "0.73rem",
-            color: "var(--text-secondary)"
-          }}>
-            <Globe2 size={13} style={{ color: "var(--cyan-tavily)" }} />
-            <span>Tavily AI: <strong>Active</strong></span>
-          </div>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
-            padding: "4px 8px",
-            borderRadius: "6px",
-            background: "var(--emerald-bg)",
-            border: "1px solid rgba(16, 185, 129, 0.25)",
-            fontSize: "0.73rem",
-            color: "var(--emerald-wisdom)",
-            fontWeight: "600"
+            gap: "6px",
+            fontSize: "0.72rem",
+            color: "var(--text-muted)",
+            fontFamily: "var(--font-geist-mono), 'JetBrains Mono', monospace"
           }}>
             <Clock size={12} />
-            <span>3:00 AM Cron: <strong>Active</strong> ({timeUntilSleep})</span>
+            <span>03:00 AM Cron ({timeUntilSleep})</span>
           </div>
         </div>
       </div>
 
-      {/* Center Tabs */}
-      <nav style={{ display: "flex", alignItems: "center", gap: "4px", background: "var(--bg-elevated)", padding: "4px", borderRadius: "10px" }}>
+      {/* Center Navigation Tabs (Engram Workbench Switcher) */}
+      <nav style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "4px",
+        background: "var(--bg-subtle)",
+        border: "1px solid var(--border-hairline)",
+        padding: "3px",
+        borderRadius: "9px"
+      }}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -146,20 +143,21 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus, schedule
                 display: "flex",
                 alignItems: "center",
                 gap: "7px",
-                padding: "7px 14px",
-                borderRadius: "8px",
-                border: "none",
-                background: isActive ? "var(--bg-secondary)" : "transparent",
-                color: isActive ? "var(--accent-primary)" : "var(--text-secondary)",
+                padding: "6px 14px",
+                borderRadius: "7px",
+                border: "1px solid transparent",
+                background: isActive ? "var(--bg-card)" : "transparent",
+                color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
                 boxShadow: isActive ? "var(--shadow-sm)" : "none",
-                fontSize: "0.85rem",
+                borderColor: isActive ? "var(--border-hairline)" : "transparent",
+                fontSize: "0.82rem",
                 fontWeight: isActive ? "600" : "500",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
-                position: "relative"
+                whiteSpace: "nowrap"
               }}
             >
-              <Icon size={16} />
+              <Icon size={14} style={{ color: isActive ? "var(--text-primary)" : "var(--text-tertiary)" }} />
               <span>{tab.label}</span>
               {Boolean(tab.badge && tab.badge > 0) && (
                 <span style={{
@@ -167,7 +165,7 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus, schedule
                   borderRadius: "10px",
                   background: "var(--crimson-challenge)",
                   color: "#ffffff",
-                  fontSize: "0.68rem",
+                  fontSize: "0.65rem",
                   fontWeight: "700"
                 }}>
                   {tab.badge}
@@ -178,8 +176,24 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus, schedule
         })}
       </nav>
 
-      {/* Right Controls: Theme Toggle */}
+      {/* Right Controls: Actions & Theme Toggle */}
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        {onTriggerReplay && (
+          <button
+            onClick={onTriggerReplay}
+            disabled={isReplaying}
+            className="engram-btn-primary"
+            style={{
+              padding: "6px 14px",
+              fontSize: "0.8rem",
+              borderRadius: "7px"
+            }}
+          >
+            <Zap size={14} className={isReplaying ? "animate-spin" : ""} />
+            <span>{isReplaying ? "Consolidating..." : "Trigger Replay"}</span>
+          </button>
+        )}
+
         <ThemeToggle />
       </div>
     </header>

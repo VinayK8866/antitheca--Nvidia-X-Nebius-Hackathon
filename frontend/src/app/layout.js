@@ -12,23 +12,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "AntiTheca — The AI That Thinks About Your Knowledge While You Sleep",
+  title: "AntiTheca — Applied Cognitive Architecture | Nebius & NVIDIA",
   description: "Autonomous cognitive consolidation, proactive knowledge arbitrage, and adversarial reasoning powered by NVIDIA Nemotron & Nebius Token Factory.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} data-theme="light">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} data-theme="dark">
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               try {
                 const savedTheme = localStorage.getItem('antitheca_theme') || localStorage.getItem('engram_theme');
-                if (savedTheme === 'dark') {
-                  document.documentElement.setAttribute('data-theme', 'dark');
-                } else {
+                if (savedTheme === 'light') {
                   document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                  document.documentElement.setAttribute('data-theme', 'dark');
                 }
               } catch (e) {}
             `,

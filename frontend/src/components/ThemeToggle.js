@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { Sun, Moon } from "lucide-react";
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("dark");
 
   useEffect(() => {
-    const current = document.documentElement.getAttribute("data-theme") || "light";
+    const current = document.documentElement.getAttribute("data-theme") || "dark";
     setTheme(current);
   }, []);
 
@@ -24,32 +24,36 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      title={`Switch to ${theme === "light" ? "Dark" : "Light"} Mode`}
+      type="button"
+      aria-label={`Switch to ${theme === "light" ? "Dark" : "Light"} Mode`}
+      title={`Switch to ${theme === "light" ? "Dark (Engram)" : "Light (ReStructure)"} Mode`}
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: "6px",
-        padding: "6px 12px",
-        borderRadius: "20px",
-        border: "1px solid var(--border-strong)",
-        background: "var(--bg-elevated)",
+        justifyContent: "center",
+        width: "36px",
+        height: "36px",
+        borderRadius: "8px",
+        border: "1px solid var(--border-hairline)",
+        background: "var(--bg-subtle)",
         color: "var(--text-primary)",
-        fontSize: "0.82rem",
-        fontWeight: "500",
         cursor: "pointer",
-        transition: "all 0.2s ease"
+        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        position: "relative"
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "var(--border-strong)";
+        e.currentTarget.style.background = "var(--bg-active)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border-hairline)";
+        e.currentTarget.style.background = "var(--bg-subtle)";
       }}
     >
       {theme === "light" ? (
-        <>
-          <Moon size={15} style={{ color: "var(--accent-primary)" }} />
-          <span>Dark</span>
-        </>
+        <Sun size={17} style={{ color: "#111111", transition: "transform 0.25s ease" }} />
       ) : (
-        <>
-          <Sun size={15} style={{ color: "var(--amber-fact)" }} />
-          <span>Light</span>
-        </>
+        <Moon size={17} style={{ color: "#ffffff", transition: "transform 0.25s ease" }} />
       )}
     </button>
   );

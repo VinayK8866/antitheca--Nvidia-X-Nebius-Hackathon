@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { 
-  AlertTriangle, ShieldAlert, CheckCircle2, XCircle, ArrowRight, Code2, 
+  ShieldAlert, CheckCircle2, XCircle, ArrowRight, Code2, 
   ShieldCheck, RefreshCw, FileCode, BookOpen, Compass, Link2, ExternalLink, 
-  Network, Clock, Calendar, Sparkles, FolderTree, CheckSquare, Scissors, Tag
+  Network, Clock, Calendar, Sparkles, FolderTree, CheckSquare, Scissors, Tag, AlertTriangle
 } from "lucide-react";
 
 export default function AdversarialView({ challenges, onRespondToChallenge, codeAudit, onRunCodeAudit, isAuditing }) {
@@ -102,48 +102,73 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
   const isVaultHealthy = (vaultHealth?.vault_health_score ?? 100) >= 80;
 
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "32px 24px" }}>
-      {/* Header */}
-      <div className="glass-panel" style={{
-        padding: "24px 30px",
-        marginBottom: "24px",
-        borderLeft: "4px solid var(--crimson-challenge)"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-          <ShieldAlert size={20} style={{ color: "var(--crimson-challenge)" }} />
-          <h2 style={{ fontSize: "1.4rem", fontWeight: "800", color: "var(--text-primary)" }}>
-            Adversarial Second Brain Radar
-          </h2>
+    <div style={{ maxWidth: "1150px", margin: "0 auto", padding: "36px 28px" }}>
+      {/* Top Header */}
+      <div style={{ marginBottom: "28px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+          <span className="engram-mono-badge" style={{ color: "var(--crimson-challenge)", borderColor: "var(--crimson-border)" }}>
+            <ShieldAlert size={12} />
+            DIALECTICAL RADAR
+          </span>
+          <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontFamily: "var(--font-geist-mono), monospace" }}>
+            NVIDIA Nemotron 3 Ultra 550B Stress-Test Engine
+          </span>
         </div>
-        <p style={{ fontSize: "0.92rem", color: "var(--text-secondary)", lineHeight: "1.5" }}>
-          Unlike sycophantic chatbots that validate whatever you say, AntiTheca actively stress-tests your notes against your past decisions and personal axioms. Here are open contradictions and architectural drifts detected in your knowledge base and codebase.
+
+        <h2 style={{
+          fontSize: "1.9rem",
+          fontWeight: "600",
+          letterSpacing: "-0.03em",
+          color: "var(--text-primary)"
+        }}>
+          Adversarial Radar & Epistemic Audit
+        </h2>
+        <p style={{
+          marginTop: "8px",
+          fontSize: "0.95rem",
+          color: "var(--text-secondary)",
+          maxWidth: "760px",
+          lineHeight: "1.6"
+        }}>
+          Unlike sycophantic chatbots that validate whatever you say, AntiTheca actively stress-tests your notes against your past decisions, personal axioms, and committed codebases. Here are open dialectical paradoxes detected in your knowledge graph.
         </p>
       </div>
 
       {/* Architectural Code Drift Radar Card */}
-      <div className="glass-panel" style={{
-        padding: "22px 26px",
-        marginBottom: "28px",
-        background: "var(--bg-elevated)",
-        border: isCompliant ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid rgba(239, 68, 68, 0.4)"
+      <div className="engram-card" style={{
+        padding: "24px 28px",
+        marginBottom: "24px",
+        borderLeft: isCompliant ? "3px solid var(--emerald-wisdom)" : "3px solid var(--crimson-challenge)"
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Code2 size={18} style={{ color: isCompliant ? "var(--emerald-wisdom)" : "var(--crimson-challenge)" }} />
-            <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "var(--text-primary)" }}>
-              Epistemic Code Drift Audit (Live ADR Precedent Verification)
-            </h3>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "6px",
+              background: "var(--bg-subtle)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: isCompliant ? "var(--emerald-wisdom)" : "var(--crimson-challenge)"
+            }}>
+              <Code2 size={16} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: "1.02rem", fontWeight: "600", color: "var(--text-primary)" }}>
+                Epistemic Code Drift Audit (Live ADR Precedents)
+              </h3>
+              <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                Continuous repository verification against self_brain.db decision records
+              </div>
+            </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{
-              padding: "4px 10px",
-              borderRadius: "6px",
-              fontSize: "0.78rem",
-              fontWeight: "700",
-              background: isCompliant ? "var(--emerald-bg)" : "var(--crimson-bg)",
+            <span className="engram-mono-badge" style={{
+              borderColor: isCompliant ? "var(--emerald-border)" : "var(--crimson-border)",
               color: isCompliant ? "var(--emerald-wisdom)" : "var(--crimson-challenge)",
-              border: `1px solid ${isCompliant ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
+              background: isCompliant ? "var(--emerald-bg)" : "var(--crimson-bg)"
             }}>
               {complianceScore}% Architectural Compliance
             </span>
@@ -151,41 +176,26 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
             <button
               onClick={onRunCodeAudit}
               disabled={isAuditing}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "5px 12px",
-                borderRadius: "6px",
-                border: "1px solid var(--border-subtle)",
-                background: "var(--bg-card)",
-                color: "var(--text-primary)",
-                fontSize: "0.76rem",
-                fontWeight: "600",
-                cursor: isAuditing ? "not-allowed" : "pointer"
-              }}
+              className="engram-btn-secondary"
+              style={{ padding: "6px 12px", fontSize: "0.78rem" }}
             >
-              <RefreshCw size={12} className={isAuditing ? "animate-spin" : ""} style={{ animation: isAuditing ? "spin 1s linear infinite" : "none" }} />
+              <RefreshCw size={12} className={isAuditing ? "animate-spin" : ""} />
               <span>{isAuditing ? "Auditing Code..." : "Re-Scan Repo"}</span>
             </button>
           </div>
         </div>
 
-        <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
-          AntiTheca continuously audits repository code commits against recorded Architectural Decision Records (ADRs) in <code>self_brain.db</code> to detect unauthorized architectural drift before it enters production.
-        </p>
-
         {/* Verified Claims Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "10px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "10px", marginTop: "14px" }}>
           {verifiedClaims.map((claim, idx) => (
             <div key={idx} style={{
-              padding: "10px 12px",
+              padding: "12px 14px",
               borderRadius: "8px",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border-subtle)",
-              fontSize: "0.8rem"
+              background: "var(--bg-subtle)",
+              border: "1px solid var(--border-hairline)",
+              fontSize: "0.82rem"
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--emerald-wisdom)", fontWeight: "700", marginBottom: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--emerald-wisdom)", fontWeight: "600", marginBottom: "4px" }}>
                 <ShieldCheck size={14} />
                 <span>{claim.rule}</span>
               </div>
@@ -197,12 +207,12 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
         </div>
 
         {driftsFound.length > 0 && (
-          <div style={{ marginTop: "14px", padding: "12px", borderRadius: "8px", background: "var(--crimson-bg)", border: "1px solid rgba(239, 68, 68, 0.3)" }}>
+          <div style={{ marginTop: "14px", padding: "14px", borderRadius: "8px", background: "var(--crimson-bg)", border: "1px solid var(--crimson-border)" }}>
             <div style={{ fontWeight: "700", color: "var(--crimson-challenge)", fontSize: "0.85rem", marginBottom: "6px" }}>
               ⚠️ Detected Code Drifts:
             </div>
             {driftsFound.map((drift, dIdx) => (
-              <div key={dIdx} style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+              <div key={dIdx} style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
                 • <strong>{drift.file}</strong>: {drift.issue}
               </div>
             ))}
@@ -210,140 +220,103 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
         )}
       </div>
 
-      {/* Obsidian Vault Health & Wikilink Integrity Card (LLM Wiki Linter) */}
-      <div className="glass-panel" style={{
-        padding: "22px 26px",
-        marginBottom: "28px",
-        background: "var(--bg-elevated)",
-        border: isVaultHealthy ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid rgba(239, 68, 68, 0.4)"
+      {/* Obsidian Vault Health & Wikilink Integrity Card */}
+      <div className="engram-card" style={{
+        padding: "24px 28px",
+        marginBottom: "24px",
+        borderLeft: isVaultHealthy ? "3px solid var(--emerald-wisdom)" : "3px solid var(--amber-fact)"
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Compass size={18} style={{ color: isVaultHealthy ? "var(--emerald-wisdom)" : "var(--crimson-challenge)" }} />
-            <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "var(--text-primary)" }}>
-              Obsidian Vault Health & Wikilink Integrity (LLM Wiki Linter)
-            </h3>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "6px",
+              background: "var(--bg-subtle)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: isVaultHealthy ? "var(--emerald-wisdom)" : "var(--amber-fact)"
+            }}>
+              <Compass size={16} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: "1.02rem", fontWeight: "600", color: "var(--text-primary)" }}>
+                Obsidian Vault Health & Wikilink Integrity
+              </h3>
+              <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                LLM Wiki Linter • Bidirectional [[wikilinks]] & Map of Content
+              </div>
+            </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{
-              padding: "4px 10px",
-              borderRadius: "6px",
-              fontSize: "0.78rem",
-              fontWeight: "700",
-              background: isVaultHealthy ? "var(--emerald-bg)" : "var(--crimson-bg)",
-              color: isVaultHealthy ? "var(--emerald-wisdom)" : "var(--crimson-challenge)",
-              border: `1px solid ${isVaultHealthy ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
+            <span className="engram-mono-badge" style={{
+              borderColor: isVaultHealthy ? "var(--emerald-border)" : "var(--amber-border)",
+              color: isVaultHealthy ? "var(--emerald-wisdom)" : "var(--amber-fact)",
+              background: isVaultHealthy ? "var(--emerald-bg)" : "var(--amber-bg)"
             }}>
               {vaultHealth?.vault_health_score ?? 100}% Vault Health
             </span>
 
             <button
               onClick={handleToggleMoc}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "5px 12px",
-                borderRadius: "6px",
-                border: "1px solid var(--accent-primary)",
-                background: "var(--accent-light)",
-                color: "var(--accent-primary)",
-                fontSize: "0.76rem",
-                fontWeight: "700",
-                cursor: "pointer",
-                transition: "all 0.15s ease"
-              }}
+              className="engram-btn-secondary"
+              style={{ padding: "6px 12px", fontSize: "0.78rem" }}
             >
               <BookOpen size={12} />
-              <span>{loadingMoc ? "Loading..." : showMoc ? "Hide Map of Content" : "View Map of Content (MOC)"}</span>
+              <span>{loadingMoc ? "Loading..." : showMoc ? "Hide Map of Content" : "View Map of Content"}</span>
             </button>
           </div>
         </div>
 
-        <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
-          Analyzes bidirectional <code>[[wikilinks]]</code> across notes, detects orphan thoughts with zero incoming links, and keeps your autonomous <code>Map_of_Content.md</code> index synced for Obsidian Graph View.
-        </p>
-
         {/* 4 Health Metrics */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px", marginBottom: showMoc ? "16px" : "0" }}>
-          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <Link2 size={15} style={{ color: "var(--accent-primary)" }} />
-            <div>
-              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-primary)" }}>{vaultHealth?.total_wikilinks ?? 0} Active Links</div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Bidirectional [[wikilinks]]</div>
-            </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px", marginTop: "12px" }}>
+          <div className="scoreboard-box" style={{ padding: "14px 18px" }}>
+            <div className="scoreboard-num" style={{ fontSize: "1.5rem" }}>{vaultHealth?.total_wikilinks ?? 0}</div>
+            <div className="scoreboard-label">ACTIVE [[WIKILINKS]]</div>
           </div>
 
-          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <CheckCircle2 size={15} style={{ color: (vaultHealth?.broken_wikilinks?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--crimson-challenge)" }} />
-            <div>
-              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: (vaultHealth?.broken_wikilinks?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--crimson-challenge)" }}>
-                {vaultHealth?.broken_wikilinks?.length ?? 0} Broken Links
-              </div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Missing target files</div>
+          <div className="scoreboard-box" style={{ padding: "14px 18px" }}>
+            <div className="scoreboard-num" style={{ fontSize: "1.5rem", color: (vaultHealth?.broken_wikilinks?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--crimson-challenge)" }}>
+              {vaultHealth?.broken_wikilinks?.length ?? 0}
             </div>
+            <div className="scoreboard-label">BROKEN LINKS</div>
           </div>
 
-          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <Network size={15} style={{ color: (vaultHealth?.orphan_notes?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--amber-fact)" }} />
-            <div>
-              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: (vaultHealth?.orphan_notes?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--amber-fact)" }}>
-                {vaultHealth?.orphan_notes?.length ?? 0} Orphan Notes
-              </div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Nodes with 0 links</div>
+          <div className="scoreboard-box" style={{ padding: "14px 18px" }}>
+            <div className="scoreboard-num" style={{ fontSize: "1.5rem", color: (vaultHealth?.orphan_notes?.length ?? 0) === 0 ? "var(--emerald-wisdom)" : "var(--amber-fact)" }}>
+              {vaultHealth?.orphan_notes?.length ?? 0}
             </div>
+            <div className="scoreboard-label">ORPHAN NOTES</div>
           </div>
 
-          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <BookOpen size={15} style={{ color: "var(--emerald-wisdom)" }} />
-            <div>
-              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-primary)" }}>
-                {vaultHealth?.moc_present ? "MOC: Active" : "MOC: Pending"}
-              </div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Map_of_Content.md</div>
+          <div className="scoreboard-box" style={{ padding: "14px 18px" }}>
+            <div className="scoreboard-num" style={{ fontSize: "1.5rem", color: "var(--text-primary)" }}>
+              {vaultHealth?.moc_present ? "ACTIVE" : "PENDING"}
             </div>
+            <div className="scoreboard-label">MAP_OF_CONTENT.MD</div>
           </div>
         </div>
 
-        {/* PARA Taxonomy Verification Footer */}
-        {vaultHealth?.para_layout && (
-          <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.78rem", color: "var(--text-secondary)" }}>
-              <FolderTree size={14} style={{ color: "var(--accent-primary)" }} />
-              <strong>PARA Standard:</strong>
-              <span style={{ color: vaultHealth.para_layout.compliant ? "var(--emerald-wisdom)" : "var(--amber-fact)", fontWeight: "700" }}>
-                {vaultHealth.para_layout.compliant ? "✅ Verified (5 Folders + vault-map.md)" : "⚠️ Partial Layout"}
-              </span>
-            </div>
-            <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-              {vaultHealth.para_layout.detected_para_folders?.map((folder, fIdx) => (
-                <span key={fIdx} style={{ fontSize: "0.7rem", padding: "2px 6px", borderRadius: "4px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", color: "var(--text-tertiary)" }}>
-                  {folder}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Expandable Map of Content Markdown Viewer */}
+        {/* Expandable MOC Markdown Viewer */}
         {showMoc && (
           <div style={{
             marginTop: "16px",
-            padding: "16px 20px",
+            padding: "18px 22px",
             borderRadius: "8px",
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-subtle)",
-            fontSize: "0.85rem",
+            background: "var(--bg-subtle)",
+            border: "1px solid var(--border-hairline)",
+            fontSize: "0.84rem",
             color: "var(--text-secondary)",
-            lineHeight: "1.6",
+            lineHeight: "1.65",
             whiteSpace: "pre-wrap",
-            fontFamily: "monospace",
+            fontFamily: "var(--font-geist-mono), 'JetBrains Mono', monospace",
             maxHeight: "340px",
             overflowY: "auto"
           }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", fontSize: "0.76rem", color: "var(--text-tertiary)", borderBottom: "1px solid var(--border-subtle)", paddingBottom: "6px" }}>
-              <span>📄 Map_of_Content.md (Live Obsidian File)</span>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", fontSize: "0.74rem", color: "var(--text-muted)", borderBottom: "1px solid var(--border-hairline)", paddingBottom: "6px" }}>
+              <span>📄 Map_of_Content.md (Live Autonomous Index)</span>
               <span>Obsidian LLM Wiki Pattern</span>
             </div>
             {mocContent}
@@ -351,60 +324,51 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
         )}
       </div>
 
-      {/* Temporal Commitment & Deadline Radar Card */}
-      <div className="glass-panel" style={{
-        padding: "22px 26px",
-        marginBottom: "28px",
-        background: "var(--bg-elevated)",
-        border: "1px solid rgba(59, 130, 246, 0.3)"
+      {/* Temporal Commitment Radar Card */}
+      <div className="engram-card" style={{
+        padding: "24px 28px",
+        marginBottom: "24px"
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Clock size={18} style={{ color: "var(--accent-primary)" }} />
-            <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "var(--text-primary)" }}>
-              Temporal Commitment & Deadline Radar
-            </h3>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "6px",
+              background: "var(--bg-subtle)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--text-primary)"
+            }}>
+              <Clock size={16} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: "1.02rem", fontWeight: "600", color: "var(--text-primary)" }}>
+                Temporal Commitment & Milestone Radar
+              </h3>
+              <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                Autonomously extracted deadlines, deliverables, and commitments
+              </div>
+            </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{
-              padding: "4px 10px",
-              borderRadius: "6px",
-              fontSize: "0.78rem",
-              fontWeight: "700",
-              background: commitments.length > 0 ? "rgba(59, 130, 246, 0.15)" : "var(--emerald-bg)",
-              color: commitments.length > 0 ? "var(--accent-primary)" : "var(--emerald-wisdom)",
-              border: `1px solid ${commitments.length > 0 ? "rgba(59, 130, 246, 0.3)" : "rgba(16, 185, 129, 0.3)"}`
-            }}>
+            <span className="engram-mono-badge">
               {commitments.length} Active Commitments
             </span>
 
             <button
               onClick={fetchCommitments}
               disabled={loadingCommitments}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "5px 12px",
-                borderRadius: "6px",
-                border: "1px solid var(--border-subtle)",
-                background: "var(--bg-card)",
-                color: "var(--text-primary)",
-                fontSize: "0.76rem",
-                fontWeight: "600",
-                cursor: "pointer"
-              }}
+              className="engram-btn-secondary"
+              style={{ padding: "6px 12px", fontSize: "0.78rem" }}
             >
-              <RefreshCw size={12} className={loadingCommitments ? "animate-spin" : ""} style={{ animation: loadingCommitments ? "spin 1s linear infinite" : "none" }} />
+              <RefreshCw size={12} className={loadingCommitments ? "animate-spin" : ""} />
               <span>Refresh</span>
             </button>
           </div>
         </div>
-
-        <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
-          AntiTheca autonomously parses unstructured notes and transcripts to detect explicit deliverables, milestones, and deadlines, surfacing them directly in your morning webhook dispatch.
-        </p>
 
         {commitments.length > 0 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -413,22 +377,18 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 14px",
+                padding: "14px 16px",
                 borderRadius: "8px",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border-subtle)",
+                background: "var(--bg-subtle)",
+                border: "1px solid var(--border-hairline)",
                 gap: "12px",
                 flexWrap: "wrap"
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: "260px" }}>
-                  <span style={{
-                    padding: "2px 7px",
-                    borderRadius: "4px",
-                    fontSize: "0.7rem",
-                    fontWeight: "700",
-                    textTransform: "uppercase",
-                    background: c.urgency === "critical" ? "var(--crimson-bg)" : c.urgency === "high" ? "var(--amber-bg)" : "rgba(59, 130, 246, 0.15)",
-                    color: c.urgency === "critical" ? "var(--crimson-challenge)" : c.urgency === "high" ? "var(--amber-fact)" : "var(--accent-primary)"
+                  <span className="engram-mono-badge" style={{
+                    borderColor: c.urgency === "critical" ? "var(--crimson-border)" : "var(--border-hairline)",
+                    color: c.urgency === "critical" ? "var(--crimson-challenge)" : "var(--text-primary)",
+                    background: c.urgency === "critical" ? "var(--crimson-bg)" : "var(--bg-card)"
                   }}>
                     {c.urgency}
                   </span>
@@ -437,7 +397,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
                       {c.task_text}
                     </div>
                     {c.doc_title && (
-                      <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>
+                      <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontFamily: "var(--font-geist-mono), monospace" }}>
                         Source: [[{c.doc_title}]]
                       </div>
                     )}
@@ -445,29 +405,17 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.78rem", color: "var(--text-secondary)", background: "var(--bg-elevated)", padding: "4px 8px", borderRadius: "5px" }}>
-                    <Calendar size={13} style={{ color: "var(--accent-primary)" }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.78rem", color: "var(--text-secondary)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                    <Calendar size={13} />
                     <span>{c.deadline_context || "Unscheduled"}</span>
                   </div>
 
                   <button
                     onClick={() => handleResolveCommitment(c.id)}
-                    title="Mark Completed"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      padding: "5px 10px",
-                      borderRadius: "6px",
-                      border: "1px solid rgba(16, 185, 129, 0.3)",
-                      background: "var(--emerald-bg)",
-                      color: "var(--emerald-wisdom)",
-                      fontSize: "0.76rem",
-                      fontWeight: "700",
-                      cursor: "pointer"
-                    }}
+                    className="engram-btn-secondary"
+                    style={{ padding: "4px 10px", fontSize: "0.75rem" }}
                   >
-                    <CheckSquare size={13} />
+                    <CheckSquare size={12} style={{ color: "var(--emerald-wisdom)" }} />
                     <span>Done</span>
                   </button>
                 </div>
@@ -475,299 +423,180 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
             ))}
           </div>
         ) : (
-          <div style={{ padding: "14px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.84rem" }}>
-            ✨ Zero pending temporal commitments. All deliverables fulfilled or resolved.
+          <div style={{ padding: "16px", borderRadius: "8px", background: "var(--bg-subtle)", textAlign: "center", color: "var(--text-muted)", fontSize: "0.84rem" }}>
+            ✨ Zero pending temporal commitments. All milestones fulfilled.
           </div>
         )}
       </div>
 
-      {/* Cognitive Defrag & Tag Garden Hygiene Card */}
-      <div className="glass-panel" style={{
-        padding: "22px 26px",
-        marginBottom: "28px",
-        background: "var(--bg-elevated)",
-        border: "1px solid rgba(168, 85, 247, 0.3)"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Scissors size={18} style={{ color: "#a855f7" }} />
-            <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "var(--text-primary)" }}>
-              Cognitive Defrag & Tag Garden Hygiene (5-Phase Maintenance Pass)
-            </h3>
-          </div>
+      {/* Dialectical Paradox Challenges List */}
+      <div style={{ marginBottom: "20px" }}>
+        <h3 style={{ fontSize: "1.15rem", fontWeight: "600", color: "var(--text-primary)", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span>Active Dialectical Paradoxes Under Cross-Examination</span>
+          <span className="engram-mono-badge" style={{ color: "var(--crimson-challenge)" }}>
+            {challenges?.length ?? 0}
+          </span>
+        </h3>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <button
-              onClick={() => setShowDefragReport(!showDefragReport)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "5px 12px",
-                borderRadius: "6px",
-                border: "1px solid var(--border-subtle)",
-                background: "var(--bg-card)",
-                color: "var(--text-primary)",
-                fontSize: "0.76rem",
-                fontWeight: "600",
-                cursor: "pointer"
-              }}
-            >
-              <FileCode size={12} />
-              <span>{showDefragReport ? "Hide Report" : "View Report"}</span>
-            </button>
-
-            <button
-              onClick={handleRunDefrag}
-              disabled={isDefragging}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "5px 12px",
-                borderRadius: "6px",
-                border: "1px solid rgba(168, 85, 247, 0.4)",
-                background: "rgba(168, 85, 247, 0.12)",
-                color: "#a855f7",
-                fontSize: "0.76rem",
-                fontWeight: "700",
-                cursor: isDefragging ? "not-allowed" : "pointer"
-              }}
-            >
-              <Sparkles size={12} className={isDefragging ? "animate-spin" : ""} style={{ animation: isDefragging ? "spin 1s linear infinite" : "none" }} />
-              <span>{isDefragging ? "Defragmenting..." : "Run Cognitive Defrag"}</span>
-            </button>
-          </div>
-        </div>
-
-        <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
-          Scans your sovereign knowledge base to prune orphan tags, detect decaying notes that lack backlinks, consolidate near-duplicate taxonomy terms, and recommend archival candidates for <code>04-Archive/</code>.
-        </p>
-
-        {/* Defrag Stats Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
-          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <Tag size={15} style={{ color: "#a855f7" }} />
-            <div>
-              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-primary)" }}>
-                {defragData?.orphan_tags_count ?? 0} Orphan Tags
-              </div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Tags used only once</div>
-            </div>
-          </div>
-
-          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <Clock size={15} style={{ color: "var(--amber-fact)" }} />
-            <div>
-              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-primary)" }}>
-                {defragData?.decayed_notes_count ?? 0} Decaying Notes
-              </div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>Untouched with 0 backlinks</div>
-            </div>
-          </div>
-
-          <div style={{ padding: "10px 12px", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-subtle)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <Scissors size={15} style={{ color: "var(--emerald-wisdom)" }} />
-            <div>
-              <div style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-primary)" }}>
-                {defragData?.suggested_tag_merges?.length ?? 1} Suggested Merges
-              </div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-tertiary)" }}>e.g. #infrastructure → #infra</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Expandable Defrag Report */}
-        {showDefragReport && defragData?.report_markdown && (
-          <div style={{
-            marginTop: "16px",
-            padding: "16px 20px",
-            borderRadius: "8px",
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-subtle)",
-            fontSize: "0.85rem",
-            color: "var(--text-secondary)",
-            lineHeight: "1.6",
-            whiteSpace: "pre-wrap",
-            fontFamily: "monospace",
-            maxHeight: "340px",
-            overflowY: "auto"
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", fontSize: "0.76rem", color: "var(--text-tertiary)", borderBottom: "1px solid var(--border-subtle)", paddingBottom: "6px" }}>
-              <span>🧹 Epistemic Defrag Report ({defragData.run_date})</span>
-              <span>Autonomous Maintenance Standard</span>
-            </div>
-            {defragData.report_markdown}
-          </div>
-        )}
-      </div>
-
-      {/* Challenges List */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-        {challenges && challenges.length > 0 ? (
-          challenges.map((c) => (
-            <div key={c.id} className="glass-panel" style={{
-              padding: "24px",
-              border: c.severity === "high" ? "1px solid rgba(239, 68, 68, 0.4)" : "1px solid var(--border-subtle)",
-              transition: "border-color 0.2s ease"
-            }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{
-                    padding: "3px 8px",
-                    borderRadius: "4px",
-                    fontSize: "0.72rem",
-                    fontWeight: "700",
-                    textTransform: "uppercase",
-                    background: c.severity === "high" ? "var(--crimson-bg)" : "var(--amber-bg)",
-                    color: c.severity === "high" ? "var(--crimson-challenge)" : "var(--amber-fact)"
-                  }}>
-                    {c.severity} severity
-                  </span>
-                  <span style={{ fontSize: "0.78rem", color: "var(--text-tertiary)", textTransform: "capitalize" }}>
-                    Type: {c.type}
-                  </span>
-                </div>
-                <span style={{ fontSize: "0.76rem", color: "var(--text-tertiary)" }}>
-                  {c.created_at?.split("T")[0] || "Recent"}
-                </span>
-              </div>
-
-              <h3 style={{ fontSize: "1.15rem", fontWeight: "700", marginBottom: "8px", color: "var(--text-primary)" }}>
-                {c.title}
-              </h3>
-              <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", marginBottom: "14px", lineHeight: "1.5" }}>
-                {c.description}
-              </p>
-
-              {/* Target Claim & Counter Evidence */}
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "14px",
-                background: "var(--bg-elevated)",
-                padding: "14px",
-                borderRadius: "10px",
-                marginBottom: "16px",
-                fontSize: "0.85rem"
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          {challenges && challenges.length > 0 ? (
+            challenges.map((c) => (
+              <div key={c.id} className="engram-card" style={{
+                padding: "24px",
+                borderLeft: "3px solid var(--crimson-challenge)"
               }}>
-                <div>
-                  <div style={{ fontWeight: "700", color: "var(--crimson-challenge)", marginBottom: "4px" }}>
-                    Target Claim Under Fire:
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span className="engram-mono-badge" style={{
+                      color: "var(--crimson-challenge)",
+                      borderColor: "var(--crimson-border)",
+                      background: "var(--crimson-bg)"
+                    }}>
+                      {c.severity} SEVERITY
+                    </span>
+                    <span style={{ fontSize: "0.76rem", color: "var(--text-muted)", textTransform: "uppercase", fontFamily: "var(--font-geist-mono), monospace" }}>
+                      TYPE: {c.type}
+                    </span>
                   </div>
-                  <div style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>
-                    "{c.target_claim || "Recent note claim"}"
-                  </div>
+                  <span style={{ fontSize: "0.74rem", color: "var(--text-muted)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                    {c.created_at?.split("T")[0] || "RECENT"}
+                  </span>
                 </div>
-                <div>
-                  <div style={{ fontWeight: "700", color: "var(--emerald-wisdom)", marginBottom: "4px" }}>
-                    Established Counter-Evidence:
-                  </div>
-                  <div style={{ color: "var(--text-secondary)" }}>
-                    {c.counter_evidence || "Prior personal wisdom precedent"}
-                  </div>
-                </div>
-              </div>
 
-              {/* Action Buttons */}
-              {activeChallengeId === c.id ? (
-                <div style={{ marginTop: "12px", borderTop: "1px solid var(--border-subtle)", paddingTop: "14px" }}>
-                  <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
-                    <button
-                      onClick={() => setResponseMode("defend")}
-                      style={{
-                        padding: "5px 12px",
-                        borderRadius: "6px",
-                        fontSize: "0.8rem",
-                        fontWeight: "600",
-                        border: "none",
-                        cursor: "pointer",
-                        background: responseMode === "defend" ? "var(--accent-primary)" : "var(--bg-elevated)",
-                        color: responseMode === "defend" ? "#ffffff" : "var(--text-secondary)"
-                      }}
-                    >
-                      Defend Position
-                    </button>
-                    <button
-                      onClick={() => setResponseMode("concede")}
-                      style={{
-                        padding: "5px 12px",
-                        borderRadius: "6px",
-                        fontSize: "0.8rem",
-                        fontWeight: "600",
-                        border: "none",
-                        cursor: "pointer",
-                        background: responseMode === "concede" ? "var(--emerald-wisdom)" : "var(--bg-elevated)",
-                        color: responseMode === "concede" ? "#ffffff" : "var(--text-secondary)"
-                      }}
-                    >
-                      Concede & Update Knowledge
-                    </button>
+                <h4 style={{ fontSize: "1.15rem", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>
+                  {c.title}
+                </h4>
+                <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", lineHeight: "1.6", marginBottom: "16px" }}>
+                  {c.description}
+                </p>
+
+                {/* Target Claim & Counter Evidence Split Box (ReStructure / Engram Style) */}
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "14px",
+                  background: "var(--bg-subtle)",
+                  border: "1px solid var(--border-hairline)",
+                  padding: "16px 18px",
+                  borderRadius: "8px",
+                  marginBottom: "18px"
+                }}>
+                  <div style={{ borderLeft: "2px solid var(--crimson-challenge)", paddingLeft: "12px" }}>
+                    <div style={{
+                      fontFamily: "var(--font-geist-mono), monospace",
+                      fontSize: "0.72rem",
+                      fontWeight: "700",
+                      color: "var(--crimson-challenge)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                      marginBottom: "6px"
+                    }}>
+                      Stored Note Claim:
+                    </div>
+                    <div style={{ color: "var(--text-primary)", fontSize: "0.86rem", fontStyle: "italic", lineHeight: "1.5" }}>
+                      "{c.target_claim || "Recent note assertion"}"
+                    </div>
                   </div>
-                  <textarea
-                    rows={3}
-                    value={responseText}
-                    onChange={(e) => setResponseText(e.target.value)}
-                    placeholder={responseMode === "defend" ? "Explain why this tension is justified or why the new approach supersedes the old..." : "Acknowledge the mistake and confirm how AntiTheca should update your personal memory ladder..."}
-                    style={{
-                      width: "100%",
-                      padding: "10px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--border-strong)",
-                      background: "var(--bg-input)",
-                      color: "var(--text-primary)",
-                      fontSize: "0.88rem",
-                      resize: "vertical",
-                      outline: "none"
-                    }}
-                  />
-                  <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px" }}>
-                    <button
-                      onClick={() => setActiveChallengeId(null)}
-                      style={{ padding: "6px 14px", borderRadius: "6px", border: "1px solid var(--border-subtle)", background: "transparent", cursor: "pointer", fontSize: "0.82rem" }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => handleSubmit(c.id)}
-                      style={{ padding: "6px 14px", borderRadius: "6px", border: "none", background: "var(--accent-primary)", color: "#ffffff", fontWeight: "600", cursor: "pointer", fontSize: "0.82rem" }}
-                    >
-                      Submit Response
-                    </button>
+
+                  <div style={{ borderLeft: "2px solid var(--emerald-wisdom)", paddingLeft: "12px" }}>
+                    <div style={{
+                      fontFamily: "var(--font-geist-mono), monospace",
+                      fontSize: "0.72rem",
+                      fontWeight: "700",
+                      color: "var(--emerald-wisdom)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                      marginBottom: "6px"
+                    }}>
+                      Established Truth / Precedent:
+                    </div>
+                    <div style={{ color: "var(--text-secondary)", fontSize: "0.86rem", lineHeight: "1.5" }}>
+                      {c.counter_evidence || "Prior personal wisdom precedent"}
+                    </div>
                   </div>
                 </div>
-              ) : (
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <button
-                    onClick={() => { setActiveChallengeId(c.id); setResponseText(""); }}
-                    style={{
-                      padding: "7px 16px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--border-strong)",
-                      background: "var(--bg-elevated)",
-                      color: "var(--text-primary)",
-                      fontSize: "0.82rem",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px"
-                    }}
-                  >
-                    <span>Cross-Examine / Resolve</span>
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-              )}
+
+                {/* Action Mode Toggle & Input */}
+                {activeChallengeId === c.id ? (
+                  <div style={{ borderTop: "1px solid var(--border-hairline)", paddingTop: "16px" }}>
+                    <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                      <button
+                        onClick={() => setResponseMode("defend")}
+                        className={responseMode === "defend" ? "engram-btn-primary" : "engram-btn-secondary"}
+                        style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+                      >
+                        Defend Thesis
+                      </button>
+                      <button
+                        onClick={() => setResponseMode("concede")}
+                        className={responseMode === "concede" ? "engram-btn-primary" : "engram-btn-secondary"}
+                        style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+                      >
+                        Concede & Update Knowledge
+                      </button>
+                    </div>
+
+                    <textarea
+                      rows={3}
+                      value={responseText}
+                      onChange={(e) => setResponseText(e.target.value)}
+                      placeholder={responseMode === "defend" 
+                        ? "Explain why this tension is justified or how this new approach supersedes previous axioms..." 
+                        : "Acknowledge the contradiction and confirm how AntiTheca should update your memory graph..."}
+                      style={{
+                        width: "100%",
+                        padding: "12px",
+                        borderRadius: "8px",
+                        border: "1px solid var(--border-hairline)",
+                        background: "var(--bg-input)",
+                        color: "var(--text-primary)",
+                        fontSize: "0.86rem",
+                        fontFamily: "var(--font-geist-sans), sans-serif",
+                        outline: "none",
+                        resize: "vertical",
+                        marginBottom: "10px"
+                      }}
+                    />
+
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                      <button
+                        onClick={() => setActiveChallengeId(null)}
+                        className="engram-btn-secondary"
+                        style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleSubmit(c.id)}
+                        className="engram-btn-primary"
+                        style={{ padding: "6px 16px", fontSize: "0.8rem" }}
+                      >
+                        Submit Resolution
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <button
+                      onClick={() => { setActiveChallengeId(c.id); setResponseText(""); }}
+                      className="engram-btn-secondary"
+                      style={{ padding: "8px 16px", fontSize: "0.82rem" }}
+                    >
+                      <span>Cross-Examine / Resolve</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="engram-card" style={{ padding: "48px 24px", textAlign: "center", color: "var(--text-muted)" }}>
+              <CheckCircle2 size={32} style={{ color: "var(--emerald-wisdom)", margin: "0 auto 10px" }} />
+              <h4 style={{ fontSize: "1.05rem", fontWeight: "600", color: "var(--text-primary)" }}>Zero Open Contradictions</h4>
+              <p style={{ fontSize: "0.85rem", marginTop: "4px" }}>Your current knowledge base and decisions are aligned without any unresolved dialectical tensions.</p>
             </div>
-          ))
-        ) : (
-          <div className="glass-panel" style={{ padding: "48px", textAlign: "center", color: "var(--text-tertiary)" }}>
-            <CheckCircle2 size={36} style={{ color: "var(--emerald-wisdom)", margin: "0 auto 12px" }} />
-            <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "var(--text-primary)" }}>Zero Open Contradictions</h3>
-            <p style={{ fontSize: "0.88rem", marginTop: "6px" }}>Your current knowledge base and decisions are aligned without any unresolved tensions.</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

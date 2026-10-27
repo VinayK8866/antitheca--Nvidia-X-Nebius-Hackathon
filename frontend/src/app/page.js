@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import EngramHero from "../components/EngramHero";
 import DailyBriefingView from "../components/DailyBriefingView";
 import KnowledgeGraphView from "../components/KnowledgeGraphView";
 import AdversarialView from "../components/AdversarialView";
@@ -210,12 +211,22 @@ export default function Home() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-canvas)" }}>
       <Navbar
         activeTab={activeTab}
         setActiveTab={handleTabChange}
         systemStatus={systemStatus}
         schedulerStatus={schedulerStatus}
+        onTriggerReplay={handleTriggerReplay}
+        isReplaying={isReplaying}
+      />
+
+      <EngramHero
+        systemStatus={systemStatus}
+        schedulerStatus={schedulerStatus}
+        onTriggerReplay={handleTriggerReplay}
+        isReplaying={isReplaying}
+        setActiveTab={handleTabChange}
       />
 
       <main style={{ flex: 1 }}>

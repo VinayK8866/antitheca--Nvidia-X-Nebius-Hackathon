@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef } from "react";
 import { Send, Plus, Link2, FileText, Sparkles, Brain, CheckCircle, Lightbulb, Clock, Upload, Eye, Image as ImageIcon, AlertTriangle, FolderOpen, Globe, Search, ExternalLink } from "lucide-react";
 
@@ -178,105 +180,86 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
     <div style={{
       maxWidth: "1400px",
       margin: "0 auto",
-      padding: "24px",
+      padding: "32px 28px",
       display: "grid",
-      gridTemplateColumns: "400px 1fr",
+      gridTemplateColumns: "420px 1fr",
       gap: "24px",
       minHeight: "calc(100vh - 120px)"
     }}>
-      {/* Left Column: Knowledge Ingest Station */}
-      <div className="glass-panel" style={{ padding: "24px", display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-          <Plus size={18} style={{ color: "var(--accent-primary)" }} />
-          <h2 style={{ fontSize: "1.1rem", fontWeight: "700" }}>Ingest Knowledge Atom</h2>
+      {/* Left Column: Knowledge Ingest Station (Engram Workbench Panel) */}
+      <div className="engram-card" style={{ padding: "24px", display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "6px",
+              background: "var(--bg-subtle)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--text-primary)"
+            }}>
+              <Plus size={16} />
+            </div>
+            <h3 style={{ fontSize: "1.02rem", fontWeight: "600", color: "var(--text-primary)" }}>
+              Ingest Knowledge Atom
+            </h3>
+          </div>
+
+          <span className="engram-mono-badge" style={{ fontSize: "0.68rem" }}>
+            MULTIMODAL
+          </span>
         </div>
 
         {/* Tab Selector (4 Modalities) */}
-        <div style={{ display: "flex", gap: "4px", background: "var(--bg-elevated)", padding: "4px", borderRadius: "8px", marginBottom: "18px" }}>
-          <button
-            onClick={() => setIngestType("vault")}
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "4px",
-              padding: "7px 2px",
-              borderRadius: "6px",
-              border: "none",
-              background: ingestType === "vault" ? "var(--bg-secondary)" : "transparent",
-              color: ingestType === "vault" ? "var(--accent-primary)" : "var(--text-secondary)",
-              fontWeight: "600",
-              fontSize: "0.76rem",
-              cursor: "pointer"
-            }}
-          >
-            <FolderOpen size={13} />
-            <span>Vault Bulk</span>
-          </button>
-          <button
-            onClick={() => setIngestType("file")}
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "4px",
-              padding: "7px 2px",
-              borderRadius: "6px",
-              border: "none",
-              background: ingestType === "file" ? "var(--bg-secondary)" : "transparent",
-              color: ingestType === "file" ? "var(--accent-primary)" : "var(--text-secondary)",
-              fontWeight: "600",
-              fontSize: "0.76rem",
-              cursor: "pointer"
-            }}
-          >
-            <Eye size={13} />
-            <span>Slide / VL</span>
-          </button>
-          <button
-            onClick={() => setIngestType("note")}
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "4px",
-              padding: "7px 2px",
-              borderRadius: "6px",
-              border: "none",
-              background: ingestType === "note" ? "var(--bg-secondary)" : "transparent",
-              color: ingestType === "note" ? "var(--accent-primary)" : "var(--text-secondary)",
-              fontWeight: "600",
-              fontSize: "0.76rem",
-              cursor: "pointer"
-            }}
-          >
-            <FileText size={13} />
-            <span>Note / ADR</span>
-          </button>
-          <button
-            onClick={() => setIngestType("url")}
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "4px",
-              padding: "7px 2px",
-              borderRadius: "6px",
-              border: "none",
-              background: ingestType === "url" ? "var(--bg-secondary)" : "transparent",
-              color: ingestType === "url" ? "var(--accent-primary)" : "var(--text-secondary)",
-              fontWeight: "600",
-              fontSize: "0.76rem",
-              cursor: "pointer"
-            }}
-          >
-            <Link2 size={13} />
-            <span>URL / Reel</span>
-          </button>
+        <div style={{
+          display: "flex",
+          gap: "4px",
+          background: "var(--bg-subtle)",
+          border: "1px solid var(--border-hairline)",
+          padding: "3px",
+          borderRadius: "8px",
+          marginBottom: "18px"
+        }}>
+          {[
+            { id: "vault", label: "Vault Bulk", icon: FolderOpen },
+            { id: "file", label: "Slide / VL", icon: Eye },
+            { id: "note", label: "Note / ADR", icon: FileText },
+            { id: "url", label: "URL / Reel", icon: Link2 }
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = ingestType === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setIngestType(item.id)}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "5px",
+                  padding: "7px 2px",
+                  borderRadius: "6px",
+                  border: "1px solid transparent",
+                  background: isActive ? "var(--bg-card)" : "transparent",
+                  color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                  boxShadow: isActive ? "var(--shadow-sm)" : "none",
+                  borderColor: isActive ? "var(--border-hairline)" : "transparent",
+                  fontWeight: isActive ? "600" : "500",
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                <Icon size={12} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Ingest Form */}
@@ -284,11 +267,11 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
           {ingestType === "vault" && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <label style={{ fontSize: "0.78rem", fontWeight: "600", color: "var(--text-secondary)" }}>
-                  Local Directory / Obsidian Vault Path
+                <label style={{ fontSize: "0.76rem", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                  LOCAL VAULT DIRECTORY PATH
                 </label>
-                <span style={{ fontSize: "0.7rem", color: "var(--emerald-wisdom)", fontWeight: "600" }}>
-                  Local Vault Bulk Sync (PARA Standard)
+                <span style={{ fontSize: "0.68rem", color: "var(--emerald-wisdom)", fontWeight: "600" }}>
+                  PARA Standard
                 </span>
               </div>
 
@@ -301,12 +284,13 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                   placeholder="/absolute/path/to/notes or ./demo_vault"
                   style={{
                     width: "100%",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-strong)",
+                    padding: "9px 12px",
+                    borderRadius: "7px",
+                    border: "1px solid var(--border-hairline)",
                     background: "var(--bg-input)",
                     color: "var(--text-primary)",
                     fontSize: "0.82rem",
+                    fontFamily: "var(--font-geist-mono), monospace",
                     outline: "none"
                   }}
                 />
@@ -317,26 +301,14 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                 type="button"
                 onClick={handleIngestDemoVault}
                 disabled={isIngesting}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border-subtle)",
-                  background: "var(--bg-elevated)",
-                  color: "var(--accent-primary)",
-                  fontSize: "0.78rem",
-                  fontWeight: "600",
-                  cursor: isIngesting ? "not-allowed" : "pointer"
-                }}
+                className="engram-btn-secondary"
+                style={{ padding: "8px 12px", fontSize: "0.78rem" }}
               >
                 <Sparkles size={13} />
                 <span>Load Sample Engineering Vault (5 Notes & ADRs)</span>
               </button>
 
-              <div style={{ fontSize: "0.78rem", color: "var(--text-tertiary)", lineHeight: "1.4" }}>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: "1.5" }}>
                 Recursively scans and embeds Markdown files, architecture decision records, and PDFs into your sovereign personal brain in seconds.
               </div>
             </div>
@@ -345,11 +317,11 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
           {ingestType === "file" && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <label style={{ fontSize: "0.78rem", fontWeight: "600", color: "var(--text-secondary)" }}>
-                  Reel Keyframe / Infographic Slide
+                <label style={{ fontSize: "0.76rem", fontWeight: "600", color: "var(--text-secondary)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                  REEL KEYFRAME / INFOGRAPHIC
                 </label>
-                <span style={{ fontSize: "0.7rem", color: "var(--emerald-wisdom)", fontWeight: "600" }}>
-                  NVIDIA Nemotron 3.5 Super-VL
+                <span className="engram-mono-badge" style={{ fontSize: "0.65rem", color: "var(--emerald-wisdom)" }}>
+                  NVIDIA SUPER-VL 3.5
                 </span>
               </div>
 
@@ -357,13 +329,13 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
               <div
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  border: "2px dashed var(--border-strong)",
-                  borderRadius: "10px",
-                  padding: "20px 16px",
+                  border: "1.5px dashed var(--border-strong)",
+                  borderRadius: "8px",
+                  padding: "24px 16px",
                   textAlign: "center",
                   cursor: "pointer",
-                  background: selectedFile ? "var(--bg-secondary)" : "var(--bg-input)",
-                  transition: "all 0.2s ease"
+                  background: selectedFile ? "var(--bg-subtle)" : "var(--bg-input)",
+                  transition: "all 0.15s ease"
                 }}
               >
                 <input
@@ -377,12 +349,12 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                     }
                   }}
                 />
-                <Upload size={24} style={{ margin: "0 auto 8px", color: "var(--accent-primary)" }} />
-                <div style={{ fontSize: "0.86rem", fontWeight: "600", color: "var(--text-primary)" }}>
-                  {selectedFile ? selectedFile.name : "Click to upload slide or screenshot"}
+                <Upload size={22} style={{ margin: "0 auto 8px", color: "var(--text-primary)" }} />
+                <div style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--text-primary)" }}>
+                  {selectedFile ? selectedFile.name : "Click to select slide or screenshot"}
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-tertiary)", marginTop: "4px" }}>
-                  PNG, JPG, WEBP, or PDF (Instagram carousels & reels)
+                <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", marginTop: "4px" }}>
+                  PNG, JPG, WEBP, or PDF (Carousels & infographics)
                 </div>
               </div>
 
@@ -391,26 +363,14 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                 type="button"
                 onClick={handleLoadSampleSlide}
                 disabled={isIngesting}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  padding: "7px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border-subtle)",
-                  background: "var(--bg-elevated)",
-                  color: "var(--accent-primary)",
-                  fontSize: "0.78rem",
-                  fontWeight: "600",
-                  cursor: isIngesting ? "not-allowed" : "pointer"
-                }}
+                className="engram-btn-secondary"
+                style={{ padding: "8px 12px", fontSize: "0.78rem" }}
               >
                 <Sparkles size={13} />
                 <span>Test Live Sample Slide: "20 Microservices Meme"</span>
               </button>
 
-              <div style={{ fontSize: "0.78rem", color: "var(--text-tertiary)", lineHeight: "1.4" }}>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: "1.5" }}>
                 Super-VL automatically OCRs diagrams, extracts architectural advice, and checks for contradictions with your saved ADRs.
               </div>
             </div>
@@ -419,8 +379,8 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
           {ingestType === "note" && (
             <>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)" }}>
-                  Title
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                  TITLE
                 </label>
                 <input
                   type="text"
@@ -430,32 +390,32 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                   onChange={(e) => setNoteTitle(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-strong)",
+                    padding: "9px 12px",
+                    borderRadius: "7px",
+                    border: "1px solid var(--border-hairline)",
                     background: "var(--bg-input)",
                     color: "var(--text-primary)",
-                    fontSize: "0.88rem",
+                    fontSize: "0.86rem",
                     outline: "none"
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)" }}>
-                  Modality
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                  MODALITY
                 </label>
                 <select
                   value={noteModality}
                   onChange={(e) => setNoteModality(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-strong)",
+                    padding: "9px 12px",
+                    borderRadius: "7px",
+                    border: "1px solid var(--border-hairline)",
                     background: "var(--bg-input)",
                     color: "var(--text-primary)",
-                    fontSize: "0.88rem",
+                    fontSize: "0.86rem",
                     outline: "none"
                   }}
                 >
@@ -467,8 +427,8 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
               </div>
 
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)" }}>
-                  Content (Markdown & [[wikilinks]])
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                  CONTENT (MARKDOWN & [[WIKILINKS]])
                 </label>
                 <textarea
                   required
@@ -480,12 +440,12 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                     width: "100%",
                     flex: 1,
                     padding: "10px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-strong)",
+                    borderRadius: "7px",
+                    border: "1px solid var(--border-hairline)",
                     background: "var(--bg-input)",
                     color: "var(--text-primary)",
                     fontSize: "0.86rem",
-                    lineHeight: "1.45",
+                    lineHeight: "1.5",
                     resize: "none",
                     outline: "none"
                   }}
@@ -497,8 +457,8 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
           {ingestType === "url" && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)" }}>
-                  Instagram Reel or Web URL
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: "600", marginBottom: "5px", color: "var(--text-secondary)", fontFamily: "var(--font-geist-mono), monospace" }}>
+                  INSTAGRAM REEL OR WEB URL
                 </label>
                 <input
                   type="url"
@@ -508,12 +468,12 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                   onChange={(e) => setUrlInput(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border-strong)",
+                    padding: "9px 12px",
+                    borderRadius: "7px",
+                    border: "1px solid var(--border-hairline)",
                     background: "var(--bg-input)",
                     color: "var(--text-primary)",
-                    fontSize: "0.88rem",
+                    fontSize: "0.86rem",
                     outline: "none"
                   }}
                 />
@@ -522,27 +482,14 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                 type="button"
                 onClick={() => setUrlInput("https://www.instagram.com/reel/demo")}
                 disabled={isIngesting}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  padding: "6px 10px",
-                  borderRadius: "6px",
-                  border: "1px solid var(--border-subtle)",
-                  background: "var(--bg-elevated)",
-                  color: "var(--accent-primary)",
-                  fontSize: "0.75rem",
-                  fontWeight: "600",
-                  cursor: isIngesting ? "not-allowed" : "pointer",
-                  width: "fit-content"
-                }}
+                className="engram-btn-secondary"
+                style={{ padding: "6px 10px", fontSize: "0.75rem", width: "fit-content" }}
               >
                 <Sparkles size={12} />
-                <span>Use Verified Demo Reel ("20 Microservices" on Cloud IP)</span>
+                <span>Use Verified Demo Reel ("20 Microservices")</span>
               </button>
-              <div style={{ fontSize: "0.76rem", color: "var(--text-tertiary)", lineHeight: "1.4" }}>
-                Parses OpenGraph captions and keyframes. On hosted cloud datacenter IPs where Meta presents anti-bot checkpoints, use the verified demo reel or provide an authenticated session cookie.
+              <div style={{ fontSize: "0.76rem", color: "var(--text-muted)", lineHeight: "1.5" }}>
+                Parses OpenGraph captions and keyframes. Extracts architectural claims and checks for contradictions with your saved ADRs.
               </div>
             </div>
           )}
@@ -551,11 +498,11 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
           {ingestStatus && (
             <div style={{
               padding: "10px 12px",
-              borderRadius: "8px",
+              borderRadius: "7px",
               fontSize: "0.82rem",
-              background: ingestStatus.type === "success" ? "var(--emerald-bg)" : ingestStatus.type === "info" ? "var(--accent-light)" : "var(--crimson-bg)",
-              color: ingestStatus.type === "success" ? "var(--emerald-wisdom)" : ingestStatus.type === "info" ? "var(--accent-primary)" : "var(--crimson-challenge)",
-              border: `1px solid ${ingestStatus.type === "success" ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
+              background: ingestStatus.type === "success" ? "var(--emerald-bg)" : ingestStatus.type === "info" ? "var(--cyan-bg)" : "var(--crimson-bg)",
+              color: ingestStatus.type === "success" ? "var(--emerald-wisdom)" : ingestStatus.type === "info" ? "var(--cyan-tavily)" : "var(--crimson-challenge)",
+              border: `1px solid ${ingestStatus.type === "success" ? "var(--emerald-border)" : "var(--crimson-border)"}`
             }}>
               <div>{ingestStatus.msg}</div>
               {ingestStatus.challenge && (
@@ -570,17 +517,8 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
           <button
             type="submit"
             disabled={isIngesting || (ingestType === "file" && !selectedFile)}
-            style={{
-              padding: "10px 16px",
-              borderRadius: "8px",
-              border: "none",
-              background: "var(--accent-primary)",
-              color: "#ffffff",
-              fontSize: "0.88rem",
-              fontWeight: "600",
-              cursor: isIngesting || (ingestType === "file" && !selectedFile) ? "not-allowed" : "pointer",
-              opacity: isIngesting || (ingestType === "file" && !selectedFile) ? 0.65 : 1
-            }}
+            className="engram-btn-primary"
+            style={{ padding: "10px 16px", marginTop: "auto" }}
           >
             {isIngesting ? "Analyzing & Ingesting..." : ingestType === "file" ? "Analyze Slide with Super-VL" : "Ingest into Brain"}
           </button>
@@ -588,14 +526,27 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
       </div>
 
       {/* Right Column: Epistemic Query & Arbitrage Console */}
-      <div className="glass-panel" style={{ padding: "24px", display: "flex", flexDirection: "column" }}>
+      <div className="engram-card" style={{ padding: "24px", display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Brain size={18} style={{ color: "var(--accent-primary)" }} />
-            <h2 style={{ fontSize: "1.1rem", fontWeight: "700" }}>Epistemic Cognitive Console</h2>
+            <div style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "6px",
+              background: "var(--bg-subtle)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--text-primary)"
+            }}>
+              <Brain size={16} />
+            </div>
+            <h3 style={{ fontSize: "1.02rem", fontWeight: "600", color: "var(--text-primary)" }}>
+              Epistemic Cognitive Console
+            </h3>
           </div>
-          <span style={{ fontSize: "0.78rem", color: "var(--text-tertiary)" }}>
-            Ground Truth RAG + Proactive Arbitrage
+          <span className="engram-mono-badge" style={{ fontSize: "0.68rem" }}>
+            GROUND TRUTH RAG + ARBITRAGE
           </span>
         </div>
 
@@ -617,12 +568,14 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              color: "var(--text-tertiary)",
-              padding: "40px 20px"
+              color: "var(--text-muted)",
+              padding: "48px 20px"
             }}>
-              <Sparkles size={32} style={{ color: "var(--accent-primary)", marginBottom: "12px" }} />
-              <h3 style={{ fontSize: "1.05rem", fontWeight: "600", color: "var(--text-primary)" }}>AntiTheca is Ready</h3>
-              <p style={{ fontSize: "0.86rem", maxWidth: "420px", marginTop: "6px" }}>
+              <Sparkles size={32} style={{ color: "var(--text-primary)", marginBottom: "12px", opacity: 0.8 }} />
+              <h4 style={{ fontSize: "1.05rem", fontWeight: "600", color: "var(--text-primary)" }}>
+                AntiTheca Cognitive Console
+              </h4>
+              <p style={{ fontSize: "0.86rem", maxWidth: "440px", marginTop: "6px", lineHeight: "1.55" }}>
                 Ask a question to cross-reference your memories and past decisions, or stress-test a new project idea against established precedent.
               </p>
             </div>
@@ -634,16 +587,17 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                   display: "flex",
                   flexDirection: "column",
                   alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
-                  maxWidth: msg.role === "user" ? "75%" : "90%"
+                  maxWidth: msg.role === "user" ? "75%" : "92%"
                 }}
               >
                 <div style={{
                   padding: "12px 16px",
-                  borderRadius: "12px",
-                  background: msg.role === "user" ? "var(--accent-primary)" : "var(--bg-elevated)",
-                  color: msg.role === "user" ? "#ffffff" : "var(--text-primary)",
+                  borderRadius: "8px",
+                  background: msg.role === "user" ? "var(--btn-primary-bg)" : "var(--bg-subtle)",
+                  color: msg.role === "user" ? "var(--btn-primary-text)" : "var(--text-primary)",
+                  border: msg.role === "user" ? "none" : "1px solid var(--border-hairline)",
                   fontSize: "0.9rem",
-                  lineHeight: "1.55",
+                  lineHeight: "1.6",
                   whiteSpace: "pre-wrap"
                 }}>
                   {msg.text}
@@ -654,25 +608,18 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                   <div style={{
                     marginTop: "10px",
                     padding: "14px 16px",
-                    borderRadius: "10px",
+                    borderRadius: "8px",
                     background: "var(--bg-card)",
-                    border: "1px solid var(--border-strong)",
+                    border: "1px solid var(--border-hairline)",
                     boxShadow: "var(--shadow-sm)"
                   }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--cyan-tavily)", fontWeight: "700", fontSize: "0.85rem" }}>
-                        <Globe size={15} />
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--cyan-tavily)", fontWeight: "600", fontSize: "0.82rem" }}>
+                        <Globe size={14} />
                         <span>Tavily Iterative Research Verification</span>
                       </div>
-                      <span style={{
-                        padding: "2px 8px",
-                        borderRadius: "6px",
-                        fontSize: "0.72rem",
-                        fontWeight: "700",
-                        background: "var(--emerald-bg)",
-                        color: "var(--emerald-wisdom)"
-                      }}>
-                        {msg.confidence ?? 85}% Empirical Confidence
+                      <span className="engram-mono-badge" style={{ color: "var(--emerald-wisdom)" }}>
+                        {msg.confidence ?? 85}% Confidence
                       </span>
                     </div>
 
@@ -680,13 +627,7 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                     {Boolean(msg.subqueries && msg.subqueries.length > 0) && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "10px" }}>
                         {msg.subqueries.map((sq, sqIdx) => (
-                          <span key={sqIdx} style={{
-                            padding: "2px 7px",
-                            borderRadius: "4px",
-                            fontSize: "0.7rem",
-                            background: "var(--bg-elevated)",
-                            color: "var(--text-secondary)"
-                          }}>
+                          <span key={sqIdx} className="engram-mono-badge" style={{ fontSize: "0.68rem" }}>
                             🔍 {sq}
                           </span>
                         ))}
@@ -694,7 +635,7 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                     )}
 
                     {/* Verified Sources */}
-                    <div style={{ fontSize: "0.8rem", color: "var(--text-tertiary)", marginBottom: "6px", fontWeight: "600" }}>
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "6px", fontFamily: "var(--font-geist-mono), monospace" }}>
                       Cross-Referenced Live Web Evidence ({msg.sources?.length || 0} sources):
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -707,7 +648,8 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                           style={{
                             padding: "6px 10px",
                             borderRadius: "6px",
-                            background: "var(--bg-elevated)",
+                            background: "var(--bg-subtle)",
+                            border: "1px solid var(--border-hairline)",
                             fontSize: "0.76rem",
                             color: "var(--text-primary)",
                             textDecoration: "none",
@@ -717,10 +659,10 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                             gap: "8px"
                           }}
                         >
-                          <span style={{ fontWeight: "600", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                          <span style={{ fontWeight: "500", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
                             {s.title}
                           </span>
-                          <ExternalLink size={12} style={{ color: "var(--text-tertiary)", flexShrink: 0 }} />
+                          <ExternalLink size={12} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                         </a>
                       ))}
                     </div>
@@ -734,10 +676,10 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                     padding: "10px 14px",
                     borderRadius: "8px",
                     background: "var(--amber-bg)",
-                    border: "1px solid rgba(217, 119, 6, 0.25)",
+                    border: "1px solid var(--amber-border)",
                     fontSize: "0.82rem"
                   }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "var(--amber-fact)", fontWeight: "700", marginBottom: "4px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "var(--amber-fact)", fontWeight: "600", marginBottom: "4px" }}>
                       <Lightbulb size={14} />
                       <span>Proactive Knowledge Arbitrage:</span>
                     </div>
@@ -751,7 +693,15 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
 
                 {/* Metadata Footer */}
                 {msg.role === "assistant" && msg.model && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px", fontSize: "0.72rem", color: "var(--text-tertiary)" }}>
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginTop: "4px",
+                    fontSize: "0.72rem",
+                    color: "var(--text-muted)",
+                    fontFamily: "var(--font-geist-mono), monospace"
+                  }}>
                     <Clock size={11} />
                     <span>{msg.latency ? `${msg.latency}ms • ` : ""}{msg.model}</span>
                   </div>
@@ -771,12 +721,12 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
             disabled={isQuerying || isResearching}
             style={{
               flex: 1,
-              padding: "12px 16px",
-              borderRadius: "10px",
-              border: "1px solid var(--border-strong)",
+              padding: "11px 16px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-hairline)",
               background: "var(--bg-input)",
               color: "var(--text-primary)",
-              fontSize: "0.92rem",
+              fontSize: "0.9rem",
               outline: "none"
             }}
           />
@@ -787,42 +737,20 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
             onClick={handleTriggerDeepResearch}
             disabled={isResearching || isQuerying || !queryText.trim()}
             title="Perform Iterative Multi-Query Deep Research with Tavily"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "0 14px",
-              borderRadius: "10px",
-              border: "1px solid rgba(6, 182, 212, 0.4)",
-              background: "var(--bg-elevated)",
-              color: "var(--cyan-tavily)",
-              fontSize: "0.82rem",
-              fontWeight: "600",
-              cursor: isResearching || isQuerying || !queryText.trim() ? "not-allowed" : "pointer",
-              opacity: isResearching || isQuerying || !queryText.trim() ? 0.6 : 1
-            }}
+            className="engram-btn-secondary"
+            style={{ padding: "0 14px", fontSize: "0.82rem" }}
           >
-            <Globe size={15} />
+            <Globe size={14} style={{ color: "var(--cyan-tavily)" }} />
             <span>{isResearching ? "Researching..." : "Deep Research"}</span>
           </button>
 
           <button
             type="submit"
             disabled={isQuerying || isResearching || !queryText.trim()}
-            style={{
-              padding: "0 18px",
-              borderRadius: "10px",
-              border: "none",
-              background: "var(--accent-primary)",
-              color: "#ffffff",
-              cursor: isQuerying || isResearching || !queryText.trim() ? "not-allowed" : "pointer",
-              opacity: isQuerying || isResearching || !queryText.trim() ? 0.6 : 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
+            className="engram-btn-primary"
+            style={{ padding: "0 18px" }}
           >
-            <Send size={18} />
+            <Send size={16} />
           </button>
         </form>
       </div>

@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Moon, ArrowRight, ShieldCheck, Zap, Globe, RefreshCw, Clock, History, CheckCircle2, Send, Bell, ExternalLink, AlertCircle } from "lucide-react";
+import { Sparkles, Moon, ArrowRight, Globe, RefreshCw, Clock, History, CheckCircle2, Send, Bell, ExternalLink, AlertCircle, Zap, ShieldAlert } from "lucide-react";
 
 export default function DailyBriefingView({ briefing, onTriggerReplay, isReplaying, schedulerStatus, onSimulateSchedule, onTestDispatch }) {
   const isCronActive = schedulerStatus?.is_enabled ?? true;
   const timeUntilSleep = schedulerStatus?.time_until_sleep_cycle || "12h 4m";
-  const recentRuns = schedulerStatus?.recent_runs || [];
 
   const [webhookUrl, setWebhookUrl] = useState("");
   const [isDispatching, setIsDispatching] = useState(false);
@@ -27,184 +26,205 @@ export default function DailyBriefingView({ briefing, onTriggerReplay, isReplayi
   };
 
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "32px 24px" }}>
-      {/* Top Banner */}
-      <div className="glass-panel" style={{
-        padding: "28px 32px",
-        marginBottom: "20px",
+    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "36px 28px" }}>
+      {/* Top Section Header */}
+      <div style={{
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "space-between",
-        borderLeft: "4px solid var(--accent-primary)",
         flexWrap: "wrap",
-        gap: "18px"
+        gap: "24px",
+        marginBottom: "28px"
       }}>
-        <div style={{ flex: 1, minWidth: "320px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-            <span style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "5px",
-              padding: "3px 8px",
-              borderRadius: "6px",
-              background: "var(--accent-light)",
-              color: "var(--accent-primary)",
-              fontSize: "0.75rem",
-              fontWeight: "700",
-              textTransform: "uppercase"
-            }}>
-              <Moon size={13} />
-              Autonomous Overnight Synthesis
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+            <span className="engram-mono-badge">
+              <Moon size={12} />
+              COGNITIVE CONSOLIDATION
             </span>
-            <span style={{ fontSize: "0.82rem", color: "var(--text-tertiary)" }}>
+            <span style={{
+              fontFamily: "var(--font-geist-mono), 'JetBrains Mono', monospace",
+              fontSize: "0.78rem",
+              color: "var(--text-muted)"
+            }}>
               {briefing?.briefing_date || "Today's Briefing"}
             </span>
           </div>
-          <h1 style={{ fontSize: "1.75rem", fontWeight: "800", color: "var(--text-primary)", letterSpacing: "-0.03em" }}>
+
+          <h2 style={{
+            fontSize: "1.9rem",
+            fontWeight: "600",
+            letterSpacing: "-0.03em",
+            color: "var(--text-primary)"
+          }}>
             {briefing?.headline || "What AntiTheca Thought About While You Slept"}
-          </h1>
-          <p style={{ marginTop: "6px", fontSize: "0.92rem", color: "var(--text-secondary)", maxWidth: "680px" }}>
-            While inactive, AntiTheca scans newly ingested notes and reels, detects hidden topological bridges, verifies open questions via Tavily, and stress-tests assumptions with NVIDIA Nemotron 3 Ultra 550B.
+          </h2>
+          <p style={{
+            marginTop: "8px",
+            fontSize: "0.95rem",
+            color: "var(--text-secondary)",
+            maxWidth: "720px",
+            lineHeight: "1.6"
+          }}>
+            Every night at 03:00 AM, the autonomous engine scans your multimodal notes, detects topological bridges across concepts, flags dialectical paradoxes, and synthesizes external truth via Tavily.
           </p>
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
           <button
             onClick={onTriggerReplay}
             disabled={isReplaying}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              padding: "10px 18px",
-              borderRadius: "10px",
-              border: "none",
-              background: "var(--accent-gradient)",
-              color: "#ffffff",
-              fontSize: "0.88rem",
-              fontWeight: "600",
-              cursor: isReplaying ? "not-allowed" : "pointer",
-              boxShadow: "var(--shadow-glow)",
-              opacity: isReplaying ? 0.75 : 1,
-              transition: "transform 0.15s ease"
-            }}
+            className="engram-btn-primary"
+            style={{ padding: "10px 20px" }}
           >
-            <RefreshCw size={16} className={isReplaying ? "animate-spin" : ""} style={{ animation: isReplaying ? "spin 1s linear infinite" : "none" }} />
-            <span>{isReplaying ? "Consolidating Thoughts..." : "Run Replay Cycle Now"}</span>
+            <RefreshCw size={15} className={isReplaying ? "animate-spin" : ""} />
+            <span>{isReplaying ? "Consolidating State..." : "Run Replay Cycle"}</span>
           </button>
 
           <button
             onClick={onSimulateSchedule}
             disabled={isReplaying}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "6px",
-              padding: "7px 14px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-subtle)",
-              background: "var(--bg-elevated)",
-              color: "var(--emerald-wisdom)",
-              fontSize: "0.78rem",
-              fontWeight: "600",
-              cursor: isReplaying ? "not-allowed" : "pointer"
-            }}
+            className="engram-btn-secondary"
+            style={{ padding: "10px 18px" }}
           >
-            <Moon size={13} />
-            <span>Simulate 3:00 AM Cron Sleep</span>
+            <Moon size={14} />
+            <span>Simulate 3:00 AM Cron</span>
           </button>
         </div>
       </div>
 
-      {/* Autonomous Sleep Cron Status Strip */}
-      <div className="glass-panel" style={{
-        padding: "14px 22px",
+      {/* Autonomous Sleep Cron Status Bar */}
+      <div className="engram-card" style={{
+        padding: "16px 24px",
         marginBottom: "24px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        background: "var(--bg-elevated)",
         flexWrap: "wrap",
-        gap: "12px",
-        fontSize: "0.82rem"
+        gap: "14px"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{
-            width: "8px",
-            height: "8px",
-            borderRadius: "50%",
+          <div className="live-pulse-dot" style={{
             background: isCronActive ? "var(--emerald-wisdom)" : "var(--amber-fact)",
             boxShadow: isCronActive ? "0 0 8px var(--emerald-wisdom)" : "none"
           }} />
-          <span style={{ fontWeight: "600", color: "var(--text-primary)" }}>
+          <span style={{ fontWeight: "600", fontSize: "0.86rem", color: "var(--text-primary)" }}>
             Autonomous Sleep Daemon: {isCronActive ? "Active (Every Night at 03:00 AM)" : "Paused"}
           </span>
-          <span style={{ color: "var(--text-tertiary)" }}>•</span>
-          <span style={{ color: "var(--text-secondary)" }}>
-            Next autonomous cycle in: <strong style={{ color: "var(--accent-primary)" }}>{timeUntilSleep}</strong>
+          <span style={{ color: "var(--text-muted)" }}>•</span>
+          <span style={{
+            fontFamily: "var(--font-geist-mono), monospace",
+            fontSize: "0.82rem",
+            color: "var(--text-secondary)"
+          }}>
+            Next autonomous consolidation in: <strong style={{ color: "var(--text-primary)" }}>{timeUntilSleep}</strong>
           </span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-tertiary)" }}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          fontFamily: "var(--font-geist-mono), monospace",
+          fontSize: "0.78rem",
+          color: "var(--text-muted)"
+        }}>
           <History size={14} />
-          <span>Total Autonomous Executions: <strong>{schedulerStatus?.total_autonomous_runs ?? 0}</strong></span>
+          <span>Total Executions: <strong style={{ color: "var(--text-primary)" }}>{schedulerStatus?.total_autonomous_runs ?? 0}</strong></span>
         </div>
       </div>
 
-      {/* Morning Dispatch Webhook Trigger (Discord/Slack notification integration) */}
-      <div className="glass-panel" style={{
-        padding: "16px 22px",
-        marginBottom: "24px",
-        background: "var(--bg-elevated)",
-        border: "1px solid var(--border-subtle)",
+      {/* Metrics Row (Scoreboard Aesthetics) */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+        gap: "16px",
+        marginBottom: "28px"
+      }}>
+        <div className="scoreboard-box">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+            <span className="scoreboard-label" style={{ marginTop: 0 }}>GRAPH CONNECTIONS</span>
+            <Sparkles size={16} style={{ color: "var(--text-muted)" }} />
+          </div>
+          <div className="scoreboard-num">
+            {briefing?.new_connections || 0}
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "var(--emerald-wisdom)", marginTop: "6px" }}>
+            Active topological bridges formed
+          </div>
+        </div>
+
+        <div className="scoreboard-box">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+            <span className="scoreboard-label" style={{ marginTop: 0 }}>PARADOXES FLAGGED</span>
+            <Zap size={16} style={{ color: "var(--crimson-challenge)" }} />
+          </div>
+          <div className="scoreboard-num" style={{ color: "var(--crimson-challenge)" }}>
+            {briefing?.contradictions || 0}
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "var(--text-muted)", marginTop: "6px" }}>
+            Dialectical contradictions under review
+          </div>
+        </div>
+
+        <div className="scoreboard-box">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+            <span className="scoreboard-label" style={{ marginTop: 0 }}>EXTERNAL WEB FACTS</span>
+            <Globe size={16} style={{ color: "var(--cyan-tavily)" }} />
+          </div>
+          <div className="scoreboard-num">
+            {briefing?.gaps_researched || 0}
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "var(--text-muted)", marginTop: "6px" }}>
+            Verified via Tavily AI Search
+          </div>
+        </div>
+      </div>
+
+      {/* Morning Dispatch Webhook Panel */}
+      <div className="engram-card" style={{
+        padding: "20px 24px",
+        marginBottom: "28px",
         display: "flex",
         flexDirection: "column",
-        gap: "12px"
+        gap: "14px"
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "8px",
-              background: "rgba(99, 102, 241, 0.12)",
+              width: "30px",
+              height: "30px",
+              borderRadius: "6px",
+              background: "var(--bg-subtle)",
+              border: "1px solid var(--border-hairline)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "var(--accent-primary)"
+              color: "var(--text-primary)"
             }}>
               <Bell size={15} />
             </div>
             <div>
-              <div style={{ fontSize: "0.86rem", fontWeight: "700", color: "var(--text-primary)" }}>
-                Morning Dispatch Webhook
+              <div style={{ fontSize: "0.88rem", fontWeight: "600", color: "var(--text-primary)" }}>
+                Morning Executive Webhook
               </div>
-              <div style={{ fontSize: "0.76rem", color: "var(--text-tertiary)" }}>
-                Dispatches your 03:00 AM executive brief to Discord, Slack, or Telegram as rich embeds
+              <div style={{ fontSize: "0.76rem", color: "var(--text-muted)" }}>
+                Dispatches your 03:00 AM synthesis to Discord, Slack, or Telegram as rich embeds
               </div>
             </div>
           </div>
 
           {dispatchResult && (
-            <div style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "4px 10px",
-              borderRadius: "20px",
-              fontSize: "0.76rem",
-              fontWeight: "600",
-              background: dispatchResult.status === "delivered" ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)",
+            <div className="engram-mono-badge" style={{
+              borderColor: dispatchResult.status === "delivered" ? "var(--emerald-border)" : "var(--crimson-border)",
               color: dispatchResult.status === "delivered" ? "var(--emerald-wisdom)" : "var(--crimson-challenge)",
-              border: `1px solid ${dispatchResult.status === "delivered" ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`
+              background: dispatchResult.status === "delivered" ? "var(--emerald-bg)" : "var(--crimson-bg)"
             }}>
-              {dispatchResult.status === "delivered" ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
+              {dispatchResult.status === "delivered" ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
               <span>
-                {dispatchResult.status === "delivered" 
-                  ? `Delivered (${dispatchResult.code || "HTTP 200"})` 
+                {dispatchResult.status === "delivered"
+                  ? `Delivered (${dispatchResult.code || "HTTP 200"})`
                   : `Failed: ${dispatchResult.error || "Unknown error"}`}
               </span>
             </div>
@@ -216,105 +236,72 @@ export default function DailyBriefingView({ briefing, onTriggerReplay, isReplayi
             type="text"
             value={webhookUrl}
             onChange={(e) => setWebhookUrl(e.target.value)}
-            placeholder="Custom Discord / Slack Webhook URL (leave empty to use default mock)"
+            placeholder="Custom Discord / Slack Webhook URL (leave empty to use default mock endpoint)"
             style={{
               flex: 1,
               minWidth: "260px",
-              padding: "8px 12px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-subtle)",
-              background: "var(--bg-card)",
+              padding: "9px 14px",
+              borderRadius: "7px",
+              border: "1px solid var(--border-hairline)",
+              background: "var(--bg-input)",
               color: "var(--text-primary)",
               fontSize: "0.82rem",
-              fontFamily: "monospace"
+              fontFamily: "var(--font-geist-mono), 'JetBrains Mono', monospace",
+              outline: "none"
             }}
           />
           <button
             onClick={handleSendDispatch}
             disabled={isDispatching}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "7px",
-              padding: "8px 16px",
-              borderRadius: "8px",
-              border: "1px solid var(--accent-primary)",
-              background: "var(--accent-light)",
-              color: "var(--accent-primary)",
-              fontSize: "0.82rem",
-              fontWeight: "700",
-              cursor: isDispatching ? "not-allowed" : "pointer",
-              transition: "all 0.15s ease"
-            }}
+            className="engram-btn-secondary"
+            style={{ padding: "8px 16px" }}
           >
             <Send size={13} className={isDispatching ? "animate-spin" : ""} />
-            <span>{isDispatching ? "Dispatching..." : "Send Test Briefing Webhook"}</span>
+            <span>{isDispatching ? "Dispatching..." : "Send Test Webhook"}</span>
           </button>
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "28px" }}>
-        <div className="glass-panel" style={{ padding: "18px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: "var(--text-tertiary)", fontSize: "0.82rem" }}>
-            <span>Graph Connections</span>
-            <Sparkles size={16} style={{ color: "var(--accent-primary)" }} />
+      {/* Main Executive Synthesis Markdown Body (Engram Scientific Style) */}
+      <div className="engram-card" style={{ padding: "36px" }}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "20px",
+          paddingBottom: "16px",
+          borderBottom: "1px solid var(--border-hairline)"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Sparkles size={17} style={{ color: "var(--text-primary)" }} />
+            <h3 style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-primary)" }}>
+              Daily Executive Synthesis
+            </h3>
           </div>
-          <div style={{ fontSize: "1.8rem", fontWeight: "800", marginTop: "8px", color: "var(--text-primary)" }}>
-            {briefing?.new_connections || 0}
-          </div>
-          <div style={{ fontSize: "0.75rem", color: "var(--emerald-wisdom)", marginTop: "4px" }}>
-            Active topological links
-          </div>
-        </div>
 
-        <div className="glass-panel" style={{ padding: "18px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: "var(--text-tertiary)", fontSize: "0.82rem" }}>
-            <span>Contradictions Flagged</span>
-            <Zap size={16} style={{ color: "var(--crimson-challenge)" }} />
-          </div>
-          <div style={{ fontSize: "1.8rem", fontWeight: "800", marginTop: "8px", color: "var(--crimson-challenge)" }}>
-            {briefing?.contradictions || 0}
-          </div>
-          <div style={{ fontSize: "0.75rem", color: "var(--text-tertiary)", marginTop: "4px" }}>
-            Adversarial tensions to review
-          </div>
+          <span className="engram-mono-badge">
+            NVIDIA NEMOTRON 3 ULTRA 550B
+          </span>
         </div>
-
-        <div className="glass-panel" style={{ padding: "18px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: "var(--text-tertiary)", fontSize: "0.82rem" }}>
-            <span>External Web Facts</span>
-            <Globe size={16} style={{ color: "var(--cyan-tavily)" }} />
-          </div>
-          <div style={{ fontSize: "1.8rem", fontWeight: "800", marginTop: "8px", color: "var(--cyan-tavily)" }}>
-            {briefing?.gaps_researched || 0}
-          </div>
-          <div style={{ fontSize: "0.75rem", color: "var(--text-tertiary)", marginTop: "4px" }}>
-            Verified via Tavily AI Search
-          </div>
-        </div>
-      </div>
-
-      {/* Main Synthesis Markdown Body */}
-      <div className="glass-panel" style={{ padding: "32px", lineHeight: "1.65" }}>
-        <h3 style={{ fontSize: "1.1rem", fontWeight: "700", marginBottom: "16px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}>
-          <Sparkles size={18} style={{ color: "var(--accent-primary)" }} />
-          Daily Executive Synthesis (NVIDIA Nemotron 3 Ultra 550B)
-        </h3>
 
         {briefing?.summary_markdown ? (
           <div style={{
-            fontSize: "0.95rem",
+            fontSize: "0.96rem",
             color: "var(--text-secondary)",
             whiteSpace: "pre-wrap",
-            fontFamily: "inherit"
+            lineHeight: "1.75",
+            fontFamily: "var(--font-geist-sans), 'Inter', sans-serif"
           }}>
             {briefing.summary_markdown}
           </div>
         ) : (
-          <div style={{ padding: "40px", textAlign: "center", color: "var(--text-tertiary)" }}>
-            <p style={{ fontSize: "1rem" }}>No overnight briefings generated yet.</p>
-            <p style={{ fontSize: "0.85rem", marginTop: "6px" }}>Click "Run Replay Cycle Now" above or ingest new notes to trigger autonomous consolidation.</p>
+          <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--text-tertiary)" }}>
+            <p style={{ fontSize: "1.05rem", fontWeight: "500", color: "var(--text-primary)" }}>
+              No overnight briefings generated yet.
+            </p>
+            <p style={{ fontSize: "0.85rem", marginTop: "6px" }}>
+              Click "Run Replay Cycle" above or ingest new notes to trigger autonomous consolidation.
+            </p>
           </div>
         )}
       </div>
