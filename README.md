@@ -1,7 +1,7 @@
 <div align="center">
 
-# 🧠 ENGRAM
-### *The AI That Thinks About Your Knowledge While You Sleep*
+# 🛡️ ANTITHECA
+### *The Adversarial Vault That Thinks While You Sleep*
 
 **Autonomous Cognitive Consolidation • Zero-Sycophancy Epistemic Memory • Dual-Brain Sovereignty**
 
@@ -13,6 +13,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
 *Submission for the **Nebius x NVIDIA Global AI Hackathon (Personal AI Track + $3,000 Tavily Sponsor Prize)***
+
+<br />
+
+| 🌐 **Live Public Demo** | 🎬 **3-Minute Video Script** | 🏆 **Devpost Manifest** | 🚀 **1-Command Start** |
+| :---: | :---: | :---: | :---: |
+| [`antitheca-demo.loca.lt`](https://antitheca-demo.loca.lt) | [`DEMO_VIDEO_SCRIPT.md`](DEMO_VIDEO_SCRIPT.md) | [`DEVPOST_SUBMISSION.md`](DEVPOST_SUBMISSION.md) | `./start.sh` |
 
 </div>
 
@@ -27,9 +33,9 @@ Worse, existing personal assistants are **dangerously sycophantic**:
 > It replies: *"Great idea! Here is a Kubernetes manifest..."*  
 > Even if three weeks ago you wrote an Architecture Decision Record (ADR 028) swearing never to introduce distributed microservices!
 
-**Engram solves this fundamentally through Neuroscience-Inspired Cognitive Consolidation:**
+**AntiTheca solves this fundamentally through Autonomous Asynchronous Synthesis and Adversarial Epistemics:**
 1. **Thinks While You Sleep**: An autonomous background daemon fires every night at 3:00 AM, cross-referencing your bookmarks, building topological bridges in your knowledge graph, verifying ungrounded claims via Tavily, and preparing your morning briefing with **NVIDIA Nemotron 3 Ultra 550B**.
-2. **Zero-Sycophancy Adversarial Radar**: Engram refuses to be a "yes-man". When you feed it a hyped reel or query, it actively searches for contradictions against your past ADRs and empirical benchmarks.
+2. **Zero-Sycophancy Adversarial Radar**: AntiTheca refuses to be a "yes-man". When you feed it a hyped reel or query, it actively searches for contradictions against your past ADRs and empirical benchmarks.
 3. **Dual-Brain Sovereignty**: Strict mathematical isolation between what *you* believe (`self_brain.db`) and what the *world* claims (`world_brain.db`), audited continuously by static code drift detectors.
 
 ---
@@ -37,7 +43,7 @@ Worse, existing personal assistants are **dangerously sycophantic**:
 ## 🏗️ System Architecture
 
 ### 1. Dual-Brain Sovereignty & Epistemic Boundary
-Engram strictly prevents external internet hallucinations and hyped social media claims from contaminating your personal conviction:
+AntiTheca strictly prevents external internet hallucinations and hyped social media claims from contaminating your personal conviction:
 
 ```mermaid
 flowchart TD
@@ -74,7 +80,7 @@ flowchart TD
 
 ## ⚡ Dynamic NVIDIA Compute Tiering on Nebius Token Factory
 
-Engram allocates compute dynamically across specialized NVIDIA models hosted on high-throughput Nebius H100/H200 clusters:
+AntiTheca allocates compute dynamically across specialized NVIDIA models hosted on high-throughput Nebius H100/H200 clusters:
 
 | Model ID | Nebius Role | Why This Model? |
 | :--- | :--- | :--- |
@@ -88,22 +94,23 @@ Engram allocates compute dynamically across specialized NVIDIA models hosted on 
 ## 🎯 Key Innovations & Capabilities
 
 ### 1. Autonomous 3:00 AM Sleep Engine (`app/scheduler.py`)
-Human memory does not consolidate during intake; it consolidates during sleep replay (Sharp Waves & Ripples in the hippocampus). Engram mirrors this:
-- An `asyncio` background daemon tracks time until 03:00 AM.
+Knowledge compounds when synthesized asynchronously rather than during hurried daytime intake. AntiTheca separates rapid ingestion from overnight consolidation:
+- **Decoupled Architecture**: Can run in-process for demo simplicity or as an independent background worker daemon (`python -m app.scheduler --daemon | --once`).
+- **Distributed Concurrency Lock**: Features persistent SQLite state locks (`scheduler_state` table) preventing race conditions across multi-worker ASGI deployments or container cycling.
 - It wakes up in the dark, traverses newly ingested graph clusters, identifies topological holes, queries Tavily for external grounding, and executes a full consolidation cycle with Nemotron 3 Ultra 550B.
 - Automatically dispatches the briefing to your team's Discord/Slack webhook before you wake up.
 
 ### 2. Multi-Query Tavily Deep Research Loop (`app/tavily_client.py`)
 *Direct contender for the $3,000 Tavily Sponsor Prize.*  
-Rather than naive single-shot web search, Engram decomposes complex claims into **3 orthogonal queries**:
+Rather than naive single-shot web search, AntiTheca decomposes complex claims into **3 orthogonal queries**:
 1. **Empirical Benchmarks** (`"empirical benchmark comparison ..."`)
 2. **Failure Modes & Counter-Arguments** (`"drawbacks failure modes and bottlenecks of ..."`)
 3. **Consensus Best Practices** (`"consensus production experience with ..."`)
-Engram queries Tavily in parallel, deduplicates sources, computes an empirical confidence score (0-100%), and writes verified facts into `world_brain.db`.
+AntiTheca queries Tavily in parallel, deduplicates sources, computes an empirical confidence score (0-100%), and writes verified facts into `world_brain.db`.
 
 ### 3. Bulk Obsidian Vault & Local Folder Ingest (`app/ingest.py`)
-- Adapts and surpasses the best feature of Khoj (37k+ stars).
-- Point Engram at any directory of Markdown files, ADRs, or PDFs:
+- Ingests and indexes entire vaults following established Obsidian and Khoj open-source vault standards.
+- Point AntiTheca at any directory of Markdown files, ADRs, or PDFs:
   ```bash
   curl -X POST http://localhost:8000/api/ingest/folder \
     -H "Content-Type: application/json" \
@@ -113,13 +120,13 @@ Engram queries Tavily in parallel, deduplicates sources, computes an empirical c
 
 ### 4. Zero-Sycophancy Adversarial Radar (`app/adversarial.py`)
 - Real-time detection of cognitive tension.
-- When an ingested note contradicts an existing ADR (e.g. *SQLite Monolith vs 20 Microservices*), Engram flags it with high severity and creates an actionable challenge requiring developer sign-off to resolve.
+- When an ingested note contradicts an existing ADR (e.g. *SQLite Monolith vs 20 Microservices*), AntiTheca flags it with high severity and creates an actionable challenge requiring developer sign-off to resolve.
 
-### 5. Static Epistemic Code Drift Auditor (`app/code_auditor.py`)
-- An automated static analysis engine that reads your codebase and verifies that your actual code complies with your ADRs:
-  - Verifies **ADR 028** (Zero distributed message brokers / microservice sprawl).
-  - Verifies **ADR 031** (Strict file-level boundary between `self_brain.db` and `world_brain.db`).
-  - Verifies **Data Sovereignty** (No plaintext secrets or leaked keys).
+### 5. Static Epistemic AST Code Drift Auditor (`app/code_auditor.py`)
+- An automated static analysis engine using Python's Abstract Syntax Tree (`ast.NodeVisitor`) that verifies your actual codebase complies with your ADRs:
+  - **AST Import & Call Visitor**: Traverses Python module ASTs to verify **ADR 028** (Zero unauthorized message broker imports like `kafka`, `celery`, or `redis`).
+  - **Database Boundary Linter**: Inspects call nodes to enforce **ADR 031** (Strict file-level boundary between `self_brain.db` and `world_brain.db`).
+  - **Data Sovereignty & Secret Privacy**: Scans AST constant tokens for unredacted hardcoded API tokens.
 
 ### 6. Obsidian LLM Wiki Standard & Vault Health Linter (`app/code_auditor.py` & `app/replay_engine.py`)
 - **Native Obsidian `[[Wikilinks]]`**: Notes and sleep briefings use standard bidirectional `[[wikilink]]` syntax, making the entire knowledge base natively navigable in Obsidian Graph View and Canvas.
@@ -152,14 +159,14 @@ Engram queries Tavily in parallel, deduplicates sources, computes an empirical c
 ### Option A: Docker Compose (1-Command Startup)
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-username/engram.git
-cd engram
+git clone https://github.com/VinayK8866/antitheca--Nvidia-X-Nebius-Hackathon.git
+cd antitheca--Nvidia-X-Nebius-Hackathon
 
 # 2. Configure environment
 cp .env.example .env
 # Edit .env with your NEBIUS_API_KEY and TAVILY_API_KEY
 
-# 3. Start Engram (Backend + Frontend)
+# 3. Start AntiTheca (Backend + Frontend)
 docker compose up --build
 ```
 Open **`http://localhost:3000`** in your browser.
@@ -169,8 +176,8 @@ Open **`http://localhost:3000`** in your browser.
 ### Option B: Local Development
 ```bash
 # 1. Clone & Enter
-git clone https://github.com/your-username/engram.git
-cd engram
+git clone https://github.com/VinayK8866/antitheca--Nvidia-X-Nebius-Hackathon.git
+cd antitheca--Nvidia-X-Nebius-Hackathon
 
 # 2. Configure keys
 cp .env.example backend/.env
@@ -186,7 +193,7 @@ cp .env.example backend/.env
 
 ## 🧪 Testing with the Built-in Demo Vault
 
-Engram comes pre-packaged with a realistic engineering vault (`backend/demo_vault/`):
+AntiTheca comes pre-packaged with a realistic engineering vault (`backend/demo_vault/`):
 - `ADR_045_State_Management.md`: Rejection of Redis in favor of SQLite WAL for single-node efficiency.
 - `ADR_052_Compute_Tiering.md`: Tiered orchestration across NVIDIA Nemotron models.
 - `PostgreSQL_vs_SQLite_Debate.md`: Deep comparison of operational complexity.
@@ -194,7 +201,7 @@ Engram comes pre-packaged with a realistic engineering vault (`backend/demo_vaul
 - `Autonomous_Agent_Memory_Loops.md`: Cognitive replay loop design patterns.
 
 **To ingest the sample vault:**
-1. Open the Engram Console at `http://localhost:3000/?tab=console`.
+1. Open the AntiTheca Console at `http://localhost:3000/?tab=console`.
 2. Click the **"Vault Bulk"** tab.
 3. Click **"Load Sample Engineering Vault (5 Notes & ADRs)"** -> Ingest into Brain.
 4. Watch the Knowledge Graph and Adversarial Radar illuminate instantly!

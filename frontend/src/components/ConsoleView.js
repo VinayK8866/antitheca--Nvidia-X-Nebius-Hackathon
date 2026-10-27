@@ -45,7 +45,7 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
     } catch (err) {
       setChatHistory((prev) => [
         ...prev,
-        { role: "assistant", text: "Error connecting to Engram backend. Please ensure server is running." }
+        { role: "assistant", text: "Error connecting to AntiTheca backend. Please ensure server is running." }
       ]);
     } finally {
       setIsQuerying(false);
@@ -288,7 +288,7 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                   Local Directory / Obsidian Vault Path
                 </label>
                 <span style={{ fontSize: "0.7rem", color: "var(--emerald-wisdom)", fontWeight: "600" }}>
-                  Khoj-Style Bulk Sync
+                  Local Vault Bulk Sync (PARA Standard)
                 </span>
               </div>
 
@@ -518,8 +518,31 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
                   }}
                 />
               </div>
-              <div style={{ fontSize: "0.8rem", color: "var(--text-tertiary)", lineHeight: "1.4" }}>
-                Engram parses OpenGraph captions, OCRs slide keyframes, strips tracking metadata, and embeds the knowledge for overnight consolidation.
+              <button
+                type="button"
+                onClick={() => setUrlInput("https://www.instagram.com/reel/demo")}
+                disabled={isIngesting}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "6px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid var(--border-subtle)",
+                  background: "var(--bg-elevated)",
+                  color: "var(--accent-primary)",
+                  fontSize: "0.75rem",
+                  fontWeight: "600",
+                  cursor: isIngesting ? "not-allowed" : "pointer",
+                  width: "fit-content"
+                }}
+              >
+                <Sparkles size={12} />
+                <span>Use Verified Demo Reel ("20 Microservices" on Cloud IP)</span>
+              </button>
+              <div style={{ fontSize: "0.76rem", color: "var(--text-tertiary)", lineHeight: "1.4" }}>
+                Parses OpenGraph captions and keyframes. On hosted cloud datacenter IPs where Meta presents anti-bot checkpoints, use the verified demo reel or provide an authenticated session cookie.
               </div>
             </div>
           )}
@@ -598,7 +621,7 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
               padding: "40px 20px"
             }}>
               <Sparkles size={32} style={{ color: "var(--accent-primary)", marginBottom: "12px" }} />
-              <h3 style={{ fontSize: "1.05rem", fontWeight: "600", color: "var(--text-primary)" }}>Engram is Ready</h3>
+              <h3 style={{ fontSize: "1.05rem", fontWeight: "600", color: "var(--text-primary)" }}>AntiTheca is Ready</h3>
               <p style={{ fontSize: "0.86rem", maxWidth: "420px", marginTop: "6px" }}>
                 Ask a question to cross-reference your memories and past decisions, or stress-test a new project idea against established precedent.
               </p>
@@ -744,7 +767,7 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
             type="text"
             value={queryText}
             onChange={(e) => setQueryText(e.target.value)}
-            placeholder="Ask Engram, challenge an assumption, or research web consensus..."
+            placeholder="Ask AntiTheca, challenge an assumption, or research web consensus..."
             disabled={isQuerying || isResearching}
             style={{
               flex: 1,

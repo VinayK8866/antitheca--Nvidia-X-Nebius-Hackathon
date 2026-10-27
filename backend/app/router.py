@@ -3,8 +3,10 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 
+import numpy as np
+
 from app.database import get_self_db_connection
-from app.embeddings import generate_embedding, blob_to_float_list, cosine_similarity
+from app.embeddings import generate_embedding, blob_to_float_list, float_list_to_blob, cosine_similarity
 from app.tiered_memory import tiered_memory
 from app.llm_client import llm_client
 from app.activator import activator
@@ -49,7 +51,7 @@ class EpistemicRouter:
         arbitrage_context = "\n".join([f"- Dormant Connection: [{a['title']}] ({a['reason']}): {a['excerpt'][:180]}" for a in arbitrage_opportunities])
 
         system_prompt = (
-            "You are Engram, an elite, highly intelligent personal cognitive partner. "
+            "You are AntiTheca, an elite, highly intelligent personal cognitive partner. "
             "You speak directly with intellectual rigor, warmth, and zero fluff. "
             "Never use robotic AI clichés like 'Certainly' or 'I hope this helps'. "
             "Stress-test ideas when appropriate, cite the user's past precedents and memories, "
@@ -104,30 +106,75 @@ Provide a sharp, direct, comprehensive answer. If there is a tension between the
     def _vector_search_chunks(self, query_vec: List[float], top_k: int = 4, threshold: float = 0.35) -> List[Dict[str, Any]]:
         conn = get_self_db_connection()
         cur = conn.cursor()
-        cur.execute("""
-        SELECT c.id, c.doc_id, c.content, c.embedding_blob, d.title, d.modality
-        FROM chunks c
-        JOIN documents d ON d.id = c.doc_id
-        WHERE c.embedding_blob IS NOT NULL
-        """)
-        rows = cur.fetchall()
-        conn.close()
 
-        scored = []
-        for r in rows:
-            vec = blob_to_float_list(r["embedding_blob"])
-            sim = cosine_similarity(query_vec, vec)
-            if sim >= threshold:
-                scored.append({
-                    "doc_id": r["doc_id"],
-                    "title": r["title"],
-                    "content": r["content"],
-                    "modality": r["modality"],
-                    "similarity": sim
-                })
+        # 1. High-Performance Indexed Vector Search via sqlite-vec (vec0)
+        try:
+            query_blob = float_list_to_blob(query_vec)
+            cur.execute("""
+            SELECT c.id, c.doc_id, c.content, d.title, d.modality, v.distance
+            FROM vec_chunks v
+            JOIN chunks c ON c.id = v.chunk_id
+            JOIN documents d ON d.id = c.doc_id
+            WHERE v.embedding MATCH ? AND k = ?
+            ORDER BY v.distance
+            """, (query_blob, top_k * 3))
+            rows = cur.fetchall()
+            conn.close()
 
-        scored.sort(key=lambda x: x["similarity"], reverse=True)
-        return scored[:top_k]
+            scored = []
+            for r in rows:
+                sim = 1.0 - float(r["distance"])
+                if sim >= threshold:
+                    scored.append({
+                        "doc_id": r["doc_id"],
+                        "title": r["title"],
+                        "content": r["content"],
+                        "modality": r["modality"],
+                        "similarity": round(sim, 4)
+                    })
+            if scored:
+                return scored[:top_k]
+        except Exception as e_idx:
+            logger.debug(f"sqlite-vec indexed query fallback ({e_idx})")
+
+        # 2. Vectorized batch fallback: NumPy matrix dot-product instead of sequential unindexed loops
+        try:
+            conn = get_self_db_connection()
+            cur = conn.cursor()
+            cur.execute("""
+            SELECT c.id, c.doc_id, c.content, c.embedding_blob, d.title, d.modality
+            FROM chunks c
+            JOIN documents d ON d.id = c.doc_id
+            WHERE c.embedding_blob IS NOT NULL
+            """)
+            rows = cur.fetchall()
+            conn.close()
+
+            if not rows:
+                return []
+
+            blobs = [r["embedding_blob"] for r in rows]
+            matrix = np.array([blob_to_float_list(b) for b in blobs], dtype=np.float32)
+            q = np.array(query_vec, dtype=np.float32)
+            sims = np.dot(matrix, q)
+
+            scored = []
+            for idx, sim in enumerate(sims):
+                if float(sim) >= threshold:
+                    r = rows[idx]
+                    scored.append({
+                        "doc_id": r["doc_id"],
+                        "title": r["title"],
+                        "content": r["content"],
+                        "modality": r["modality"],
+                        "similarity": round(float(sim), 4)
+                    })
+
+            scored.sort(key=lambda x: x["similarity"], reverse=True)
+            return scored[:top_k]
+        except Exception as e_fb:
+            logger.error(f"Vector search fallback error: {e_fb}")
+            return []
 
     def _retrieve_decisions_context(self, query: str) -> str:
         conn = get_self_db_connection()

@@ -37,7 +37,7 @@ class NebiusNemotronClient:
     def query(
         self,
         prompt: str,
-        system_prompt: str = "You are Engram, an autonomous personal cognitive intelligence.",
+        system_prompt: str = "You are AntiTheca, an autonomous personal cognitive intelligence.",
         model_type: str = "reasoning",
         temperature: float = 0.2,
         max_tokens: int = 1500
@@ -63,6 +63,22 @@ class NebiusNemotronClient:
                 logger.error(f"Nebius API call failed for model {model}: {e}. Falling back to internal engine.")
 
         return self._local_fallback_response(prompt, system_prompt, model_type)
+
+    def predict_fast(
+        self,
+        prompt: str,
+        system_prompt: str = "You are AntiTheca, an autonomous personal cognitive intelligence.",
+        temperature: float = 0.2,
+        max_tokens: int = 1500
+    ) -> str:
+        """High-speed query helper using NVIDIA fast Nemotron model hosted on Nebius."""
+        return self.query(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            model_type="fast",
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
 
     def analyze_image(self, image_bytes: bytes, prompt: str = "Analyze this image and summarize its key insights, diagrams, and text.") -> str:
         """Processes an image using NVIDIA Nemotron 3.5 Super-VL hosted on Nebius."""
@@ -136,7 +152,7 @@ class NebiusNemotronClient:
     def _local_fallback_response(self, prompt: str, system_prompt: str, model_type: str) -> str:
         """Deterministic fallback synthesizer when cloud API is unconfigured."""
         return (
-            "### [Engram Local Synthesis]\n\n"
+            "### [AntiTheca Local Synthesis]\n\n"
             f"Synthesizing cognitive context based on your internal memory and knowledge graph.\n\n"
             f"**Context Analysis**: Your query directly intersects with stored epistemic facts and decision precedents.\n\n"
             f"> Context: {prompt[:300]}..."

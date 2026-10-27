@@ -49,11 +49,11 @@ class MorningDispatcher:
                 fields.append({"name": "⏰ Temporal Commitments & Deadlines", "value": commitments_summary, "inline": False})
 
             payload = {
-                "username": "Engram Epistemic Engine",
-                "avatar_url": "https://assets.khoj.dev/khoj-logo-sideways-1200x540.png",
+                "username": "AntiTheca Epistemic Engine",
+                "avatar_url": "https://cdn-icons-png.flaticon.com/512/8644/8644487.png",
                 "embeds": [
                     {
-                        "title": f"🌅 Engram Morning Cognitive Briefing ({date_str})",
+                        "title": f"🌅 AntiTheca Morning Cognitive Briefing ({date_str})",
                         "description": f"**{headline}**\n\n{preview_text}",
                         "color": 65450, # Emerald teal
                         "fields": fields,
@@ -65,7 +65,7 @@ class MorningDispatcher:
             }
         else:
             # Generic JSON / Slack compatible webhook format
-            text_body = f"🌅 *Engram Morning Briefing ({date_str})*\n*{headline}*\n\n{preview_text}"
+            text_body = f"🌅 *AntiTheca Morning Briefing ({date_str})*\n*{headline}*\n\n{preview_text}"
             if commitments_summary:
                 text_body += f"\n\n*⏰ Urgent Deadlines:*\n{commitments_summary}"
 
@@ -79,7 +79,7 @@ class MorningDispatcher:
                     "contradictions": contradictions,
                     "web_facts": facts
                 },
-                "source": "Engram Autonomous Sleep Replay"
+                "source": "AntiTheca Autonomous Sleep Replay"
             }
 
         try:
@@ -98,7 +98,7 @@ class MorningDispatcher:
         """Sends an immediate test ping to verify webhook connectivity."""
         sample_briefing = {
             "headline": "Epistemic Test Ping: Autonomous Sleep Replay Active",
-            "summary_markdown": "This is a live test notification from Engram. When your 3:00 AM sleep replay finishes, your daily synthesis, contradiction radar, and Tavily fact-check results will arrive here automatically.",
+            "summary_markdown": "This is a live test notification from AntiTheca. When your 3:00 AM sleep replay finishes, your daily synthesis, contradiction radar, and Tavily fact-check results will arrive here automatically.",
             "briefing_date": "Test Dispatch",
             "new_connections": 12,
             "contradictions": 1,

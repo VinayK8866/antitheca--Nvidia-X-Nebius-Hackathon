@@ -4,7 +4,7 @@
 ## Date: 2026-10-15
 
 ## Context
-When architecting Engram, external tutorials suggested deploying Redis Sentinel and PostgreSQL for distributed state cache.
+When architecting AntiTheca, external tutorials suggested deploying Redis Sentinel and PostgreSQL for distributed state cache.
 
 ## Decision
 We strictly reject distributed in-memory caches. We use SQLite in WAL mode with a single writer thread and multi-threaded readers.

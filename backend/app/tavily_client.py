@@ -6,7 +6,7 @@ from app.database import get_world_db_connection
 logger = logging.getLogger(__name__)
 
 class TavilyResearchClient:
-    """Tavily search & external verification engine for Engram."""
+    """Tavily search & external verification engine for AntiTheca."""
 
     def __init__(self):
         self.api_key = settings.TAVILY_API_KEY
@@ -105,9 +105,11 @@ class TavilyResearchClient:
                 f"Provide a concise, rigorous 2-paragraph synthesis comparing the claim against empirical evidence. "
                 f"Include an objective consensus verdict and state confidence percentage."
             )
-            synthesis = llm_client.predict_fast(
+            synthesis = llm_client.query(
                 synth_prompt,
-                system_prompt="You are an adversarial research auditor. Assess evidence strictly based on production realities and engineering rigor."
+                system_prompt="You are an adversarial research auditor. Assess evidence strictly based on production realities and engineering rigor.",
+                model_type="fast",
+                max_tokens=600
             )
         except Exception as e:
             logger.warning(f"Error synthesizing deep research: {e}")

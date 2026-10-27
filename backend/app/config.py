@@ -9,7 +9,7 @@ DEFAULT_DATA_DIR = BACKEND_DIR / "data"
 
 class Settings(BaseSettings):
     # App
-    PROJECT_NAME: str = "Engram"
+    PROJECT_NAME: str = "AntiTheca"
     DEBUG: bool = True
     HOST: str = "0.0.0.0"
     PORT: int = 8000

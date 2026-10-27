@@ -1,5 +1,6 @@
 import os
 import re
+import ast
 import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -7,11 +8,80 @@ from app.database import get_self_db_connection
 
 logger = logging.getLogger(__name__)
 
+class ADRComplianceASTVisitor(ast.NodeVisitor):
+    """
+    Abstract Syntax Tree (AST) visitor that inspects Python module structure,
+    import statements, call sites, and constant declarations against ADR constraints.
+    """
+    BANNED_BROKER_MODULES = {
+        "redis", "pika", "celery", "kafka", "rabbitmq", "kombu", "dramatiq"
+    }
+
+    SECRET_PATTERN = re.compile(r'^(sk-[a-zA-Z0-9]{20,}|tvly-[a-zA-Z0-9_-]{20,}|v1\.CmQK[a-zA-Z0-9_-]{30,})$')
+
+    def __init__(self, rel_path: str):
+        self.rel_path = rel_path
+        self.violations: List[Dict[str, Any]] = []
+
+    def visit_Import(self, node: ast.Import):
+        for alias in node.names:
+            base_mod = alias.name.split('.')[0].lower()
+            if base_mod in self.BANNED_BROKER_MODULES:
+                self.violations.append({
+                    "rule": "ADR 028 (Lean Monolith)",
+                    "file": self.rel_path,
+                    "line": node.lineno,
+                    "explanation": f"AST Import of banned broker library: '{alias.name}'. Violates lean single-service architecture.",
+                    "match": f"import {alias.name}"
+                })
+        self.generic_visit(node)
+
+    def visit_ImportFrom(self, node: ast.ImportFrom):
+        if node.module:
+            base_mod = node.module.split('.')[0].lower()
+            if base_mod in self.BANNED_BROKER_MODULES:
+                self.violations.append({
+                    "rule": "ADR 028 (Lean Monolith)",
+                    "file": self.rel_path,
+                    "line": node.lineno,
+                    "explanation": f"AST ImportFrom of banned broker library: '{node.module}'. Violates lean single-service architecture.",
+                    "match": f"from {node.module} import ..."
+                })
+        self.generic_visit(node)
+
+    def visit_Constant(self, node: ast.Constant):
+        if isinstance(node.value, str):
+            val = node.value.strip()
+            if self.SECRET_PATTERN.match(val):
+                self.violations.append({
+                    "rule": "Data Sovereignty & Secret Privacy",
+                    "file": self.rel_path,
+                    "line": node.lineno,
+                    "explanation": "Hardcoded API secret token found in AST string constant. Must use environment variables.",
+                    "match": f"{val[:10]}...{val[-4:]}"
+                })
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call):
+        # Inspect function calls for direct unverified cross-database writes
+        if isinstance(node.func, ast.Attribute) and node.func.attr == "execute":
+            if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
+                sql = node.args[0].value.lower()
+                if "insert into documents" in sql and "tavily" in sql:
+                    self.violations.append({
+                        "rule": "ADR 031 (Epistemic Isolation)",
+                        "file": self.rel_path,
+                        "line": node.lineno,
+                        "explanation": "Direct AST SQL write of unverified external Tavily results into self_brain.db.",
+                        "match": "INSERT INTO documents ... tavily"
+                    })
+        self.generic_visit(node)
+
 class EpistemicCodeAuditor:
-    """Verifies that codebase implementation adheres strictly to established ADRs and prevents architectural drift."""
+    """Verifies that codebase implementation adheres strictly to established ADRs via AST analysis."""
 
     def audit_workspace(self, root_dir: Optional[str] = None) -> Dict[str, Any]:
-        """Scans python and javascript files against established architectural decisions."""
+        """Scans workspace files via Python AST analysis and structural JS parsing against ADRs."""
         target_dir = Path(root_dir) if root_dir else Path(__file__).resolve().parent.parent
 
         # 1. Fetch established decisions from database
@@ -25,49 +95,46 @@ class EpistemicCodeAuditor:
         violations = []
         verified_claims = []
 
-        # Anti-pattern patterns
-        forbidden_patterns = [
-            (
-                r'\b(redis|pika|celery|kafka|rabbitmq)\b',
-                "ADR 028 (Lean Monolith)",
-                "Detected distributed broker/queue dependency which violates lean single-service architecture."
-            ),
-            (
-                r'self_brain\.db.*external_sources|INSERT\s+INTO\s+documents.*tavily',
-                "ADR 031 (Epistemic Isolation)",
-                "Detected direct write from external web search into self_brain.db without epistemic firewall."
-            ),
-            (
-                r'(["\'](sk-[a-zA-Z0-9]{20,}|tvly-[a-zA-Z0-9_-]{20,})["\'])',
-                "Privacy Guardrail",
-                "Hardcoded API key detected in source code. Must use environment variables."
-            )
-        ]
-
         # Scan files in backend and frontend
         for ext in ["*.py", "*.js", "*.mjs"]:
             for file_path in target_dir.rglob(ext):
-                # Ignore tests, venv, node_modules, git, code_auditor.py
                 path_str = str(file_path)
                 if any(ignored in path_str for ignored in ["venv", "node_modules", ".git", "__pycache__", "tests", "code_auditor.py"]):
                     continue
 
                 scanned_files += 1
-                try:
-                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                        code = f.read()
+                rel_path = str(file_path.relative_to(target_dir))
 
-                    for pattern, rule_name, explanation in forbidden_patterns:
-                        matches = re.findall(pattern, code, re.IGNORECASE)
-                        if matches:
-                            violations.append({
-                                "rule": rule_name,
-                                "file": str(file_path.relative_to(target_dir)),
-                                "explanation": explanation,
-                                "match": str(matches[0])[:60]
-                            })
-                except Exception as e:
-                    logger.debug(f"Could not read file {file_path}: {e}")
+                if file_path.suffix == ".py":
+                    # Rigorous AST parsing for Python source files
+                    try:
+                        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                            source = f.read()
+                        tree = ast.parse(source, filename=rel_path)
+                        visitor = ADRComplianceASTVisitor(rel_path=rel_path)
+                        visitor.visit(tree)
+                        violations.extend(visitor.violations)
+                    except Exception as e:
+                        logger.debug(f"AST parse warning for {file_path}: {e}")
+                else:
+                    # Structural import scan for JavaScript/MJS files
+                    try:
+                        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                            lines = f.readlines()
+                        for line_idx, line in enumerate(lines, start=1):
+                            line_clean = line.strip()
+                            if line_clean.startswith("//") or line_clean.startswith("/*"):
+                                continue
+                            if re.search(r'\bfrom\s+[\'"](redis|pika|celery|kafka|rabbitmq)[\'"]|\brequire\([\'"](redis|pika|celery|kafka|rabbitmq)[\'"]\)', line_clean, re.IGNORECASE):
+                                violations.append({
+                                    "rule": "ADR 028 (Lean Monolith)",
+                                    "file": rel_path,
+                                    "line": line_idx,
+                                    "explanation": "Detected JS import of distributed message broker.",
+                                    "match": line_clean[:60]
+                                })
+                    except Exception as e_js:
+                        logger.debug(f"JS scan warning for {file_path}: {e_js}")
 
         # Verified assertions
         if not violations:

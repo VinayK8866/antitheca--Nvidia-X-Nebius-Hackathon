@@ -2,7 +2,7 @@
 set -e
 
 echo "=========================================================="
-echo "🧠 ENGRAM — Autonomous Cognitive Consolidation"
+echo "🛡️ AntiTheca — Autonomous Cognitive Consolidation"
 echo "Nebius x NVIDIA Global AI Hackathon (Personal AI Track)"
 echo "=========================================================="
 
@@ -20,7 +20,7 @@ if ! command -v npm &> /dev/null; then
     exit 1
 fi
 
-echo "📦 1. Starting Engram Backend on port 8000..."
+echo "📦 1. Starting AntiTheca Backend on port 8000..."
 cd "$ROOT_DIR/backend"
 if [ ! -d "venv" ]; then
     echo "Creating virtual environment..."
@@ -37,7 +37,7 @@ python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload &
 BACKEND_PID=$!
 echo "✅ Backend running (PID: $BACKEND_PID)"
 
-echo "🎨 2. Starting Engram Frontend on port 3000..."
+echo "🎨 2. Starting AntiTheca Frontend on port 3000..."
 cd "$ROOT_DIR/frontend"
 if [ ! -d "node_modules" ]; then
     echo "Installing frontend dependencies..."
@@ -49,7 +49,7 @@ FRONTEND_PID=$!
 echo "✅ Frontend running (PID: $FRONTEND_PID)"
 
 echo ""
-echo "🚀 Engram is Live!"
+echo "🚀 AntiTheca is Live!"
 echo "   Frontend: http://localhost:3000"
 echo "   Backend:  http://localhost:8000"
 echo "   API Docs: http://localhost:8000/docs"

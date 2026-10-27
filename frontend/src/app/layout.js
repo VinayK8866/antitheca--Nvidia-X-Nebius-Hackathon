@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Engram — The AI That Thinks About Your Knowledge While You Sleep",
+  title: "AntiTheca — The AI That Thinks About Your Knowledge While You Sleep",
   description: "Autonomous cognitive consolidation, proactive knowledge arbitrage, and adversarial reasoning powered by NVIDIA Nemotron & Nebius Token Factory.",
 };
 
@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const savedTheme = localStorage.getItem('engram_theme');
+                const savedTheme = localStorage.getItem('antitheca_theme') || localStorage.getItem('engram_theme');
                 if (savedTheme === 'dark') {
                   document.documentElement.setAttribute('data-theme', 'dark');
                 } else {

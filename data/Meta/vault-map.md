@@ -12,7 +12,7 @@ standard: PARA
 
 # 🗺️ Vault Map & PARA Specification
 Defines the architectural layout and PARA (Projects, Areas, Resources, Archive) taxonomy for this sovereign Obsidian vault.
-Engram's autonomous cognitive engine and audit daemons automatically route knowledge atoms and resolve cross-vault paths according to this schema.
+AntiTheca's autonomous cognitive engine and audit daemons automatically route knowledge atoms and resolve cross-vault paths according to this schema.
 
 | Role | Target Folder | Purpose |
 |------|---------------|---------|

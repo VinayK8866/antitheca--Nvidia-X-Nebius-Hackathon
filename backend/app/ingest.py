@@ -64,20 +64,31 @@ class KnowledgeIngestionPipeline:
         conn = get_self_db_connection()
         cur = conn.cursor()
 
-        cur.execute("""
-        INSERT INTO documents (title, path, file_type, modality, provenance, content, summary, tags_json, file_hash, is_processed_replay)
-        VALUES (?, ?, 'md', ?, ?, ?, ?, ?, ?, 0)
-        """, (
-            title,
-            source_path or f"note://{file_hash[:12]}",
-            modality,
-            provenance,
-            sanitized_content,
-            sanitized_content[:200],
-            json.dumps(all_tags),
-            file_hash
-        ))
-        doc_id = cur.lastrowid
+        target_path = source_path or f"note://{file_hash[:12]}"
+        cur.execute("SELECT id FROM documents WHERE path = ?", (target_path,))
+        existing_doc = cur.fetchone()
+        if existing_doc:
+            doc_id = existing_doc["id"]
+            cur.execute("""
+            UPDATE documents SET title = ?, modality = ?, provenance = ?, content = ?, summary = ?, tags_json = ?, file_hash = ?, is_processed_replay = 0, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            """, (title, modality, provenance, sanitized_content, sanitized_content[:200], json.dumps(all_tags), file_hash, doc_id))
+            cur.execute("DELETE FROM chunks WHERE doc_id = ?", (doc_id,))
+        else:
+            cur.execute("""
+            INSERT INTO documents (title, path, file_type, modality, provenance, content, summary, tags_json, file_hash, is_processed_replay)
+            VALUES (?, ?, 'md', ?, ?, ?, ?, ?, ?, 0)
+            """, (
+                title,
+                target_path,
+                modality,
+                provenance,
+                sanitized_content,
+                sanitized_content[:200],
+                json.dumps(all_tags),
+                file_hash
+            ))
+            doc_id = cur.lastrowid
 
         # 4. Chunk & Generate Embeddings
         chunks = chunk_text(sanitized_content)
@@ -88,6 +99,11 @@ class KnowledgeIngestionPipeline:
             INSERT INTO chunks (doc_id, chunk_index, content, embedding_blob)
             VALUES (?, ?, ?, ?)
             """, (doc_id, idx, chunk, blob))
+            chunk_id = cur.lastrowid
+            try:
+                cur.execute("INSERT OR REPLACE INTO vec_chunks (chunk_id, embedding) VALUES (?, ?)", (chunk_id, blob))
+            except Exception as e_vec:
+                logger.debug(f"vec_chunks sync note: {e_vec}")
 
         conn.commit()
         conn.close()

@@ -46,7 +46,7 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus, schedule
           </div>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "1.15rem", fontWeight: "700", letterSpacing: "-0.02em" }}>ENGRAM</span>
+              <span style={{ fontSize: "1.15rem", fontWeight: "700", letterSpacing: "-0.02em" }}>AntiTheca</span>
               <span style={{
                 fontSize: "0.65rem",
                 textTransform: "uppercase",

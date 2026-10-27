@@ -19,6 +19,13 @@ def get_self_db_connection(db_path: Optional[str] = None) -> sqlite3.Connection:
     conn.execute("PRAGMA busy_timeout=60000;")
     conn.execute("PRAGMA synchronous=NORMAL;")
     conn.row_factory = sqlite3.Row
+    try:
+        import sqlite_vec
+        conn.enable_load_extension(True)
+        sqlite_vec.load(conn)
+        conn.enable_load_extension(False)
+    except Exception as e:
+        logger.debug(f"sqlite_vec extension load note: {e}")
     return conn
 
 def get_world_db_connection(db_path: Optional[str] = None) -> sqlite3.Connection:
@@ -80,6 +87,24 @@ def init_self_db(db_path: Optional[str] = None):
         FOREIGN KEY (doc_id) REFERENCES documents (id) ON DELETE CASCADE
     );
     """)
+
+    # High-Performance Vector Index (sqlite-vec)
+    try:
+        cursor.execute("""
+        CREATE VIRTUAL TABLE IF NOT EXISTS vec_chunks USING vec0(
+            chunk_id INTEGER PRIMARY KEY,
+            embedding float[384] distance_metric=cosine
+        );
+        """)
+        # Populate vec_chunks from existing chunks if any are unindexed
+        cursor.execute("""
+        INSERT INTO vec_chunks (chunk_id, embedding)
+        SELECT id, embedding_blob FROM chunks
+        WHERE embedding_blob IS NOT NULL
+          AND id NOT IN (SELECT chunk_id FROM vec_chunks);
+        """)
+    except Exception as e_vec:
+        logger.warning(f"Could not initialize vec_chunks virtual table: {e_vec}")
 
     # Personal Knowledge Graph Nodes
     cursor.execute("""
@@ -227,6 +252,29 @@ def init_self_db(db_path: Optional[str] = None):
         orphan_tags_count INTEGER DEFAULT 0,
         defrag_report_markdown TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    # Autonomous 3:00 AM Scheduler Run Audit Log (Persistent History)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS scheduler_runs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        trigger_source TEXT NOT NULL,
+        status TEXT NOT NULL,
+        headline TEXT,
+        replayed_atoms INTEGER DEFAULT 0,
+        duration_sec REAL DEFAULT 0.0,
+        dispatch_json TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    # Scheduler Distributed State & Concurrency Lock
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS scheduler_state (
+        key TEXT PRIMARY KEY,
+        value TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
 

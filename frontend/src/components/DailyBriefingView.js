@@ -54,17 +54,17 @@ export default function DailyBriefingView({ briefing, onTriggerReplay, isReplayi
               textTransform: "uppercase"
             }}>
               <Moon size={13} />
-              Neuroscience Memory Consolidation
+              Autonomous Overnight Synthesis
             </span>
             <span style={{ fontSize: "0.82rem", color: "var(--text-tertiary)" }}>
               {briefing?.briefing_date || "Today's Briefing"}
             </span>
           </div>
           <h1 style={{ fontSize: "1.75rem", fontWeight: "800", color: "var(--text-primary)", letterSpacing: "-0.03em" }}>
-            {briefing?.headline || "What Engram Thought About While You Slept"}
+            {briefing?.headline || "What AntiTheca Thought About While You Slept"}
           </h1>
           <p style={{ marginTop: "6px", fontSize: "0.92rem", color: "var(--text-secondary)", maxWidth: "680px" }}>
-            While inactive, Engram scans newly ingested notes and reels, detects hidden topological bridges, verifies open questions via Tavily, and stress-tests assumptions with NVIDIA Nemotron 3 Ultra 550B.
+            While inactive, AntiTheca scans newly ingested notes and reels, detects hidden topological bridges, verifies open questions via Tavily, and stress-tests assumptions with NVIDIA Nemotron 3 Ultra 550B.
           </p>
         </div>
 
@@ -154,7 +154,7 @@ export default function DailyBriefingView({ briefing, onTriggerReplay, isReplayi
         </div>
       </div>
 
-      {/* Morning Dispatch Webhook Trigger (Khoj-style notification integration) */}
+      {/* Morning Dispatch Webhook Trigger (Discord/Slack notification integration) */}
       <div className="glass-panel" style={{
         padding: "16px 22px",
         marginBottom: "24px",

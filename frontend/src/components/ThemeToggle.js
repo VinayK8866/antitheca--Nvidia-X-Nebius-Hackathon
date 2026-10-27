@@ -17,7 +17,7 @@ export default function ThemeToggle() {
     document.documentElement.setAttribute("data-theme", nextTheme);
     document.body.setAttribute("data-theme", nextTheme);
     try {
-      localStorage.setItem("engram_theme", nextTheme);
+      localStorage.setItem("antitheca_theme", nextTheme);
     } catch (e) {}
   };
 

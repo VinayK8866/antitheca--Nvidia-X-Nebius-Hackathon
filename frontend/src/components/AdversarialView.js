@@ -32,7 +32,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
   const fetchCommitments = async () => {
     setLoadingCommitments(true);
     try {
-      const res = await fetch("http://localhost:8000/api/commitments").then(r => r.json());
+      const res = await fetch("/api/commitments").then(r => r.json());
       if (Array.isArray(res)) setCommitments(res);
     } catch (e) {
       console.error("Error fetching commitments:", e);
@@ -43,7 +43,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
 
   const fetchLatestDefrag = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/defrag/latest").then(r => r.json());
+      const res = await fetch("/api/defrag/latest").then(r => r.json());
       setDefragData(res);
     } catch (e) {
       console.error("Error fetching defrag:", e);
@@ -52,7 +52,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
 
   const handleResolveCommitment = async (commitmentId) => {
     try {
-      await fetch(`http://localhost:8000/api/commitments/${commitmentId}/resolve`, { method: "POST" });
+      await fetch(`/api/commitments/${commitmentId}/resolve`, { method: "POST" });
       setCommitments(prev => prev.filter(c => c.id !== commitmentId));
     } catch (e) {
       console.error("Error resolving commitment:", e);
@@ -62,7 +62,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
   const handleRunDefrag = async () => {
     setIsDefragging(true);
     try {
-      const res = await fetch("http://localhost:8000/api/defrag/run", { method: "POST" }).then(r => r.json());
+      const res = await fetch("/api/defrag/run", { method: "POST" }).then(r => r.json());
       setDefragData(res);
       setShowDefragReport(true);
     } catch (e) {
@@ -83,7 +83,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
     if (!showMoc && !mocContent) {
       setLoadingMoc(true);
       try {
-        const res = await fetch("http://localhost:8000/api/vault/moc").then(r => r.json());
+        const res = await fetch("/api/vault/moc").then(r => r.json());
         setMocContent(res.markdown || "No Map of Content generated yet.");
       } catch (e) {
         setMocContent("Failed to load Map of Content.");
@@ -116,7 +116,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
           </h2>
         </div>
         <p style={{ fontSize: "0.92rem", color: "var(--text-secondary)", lineHeight: "1.5" }}>
-          Unlike sycophantic chatbots that validate whatever you say, Engram actively stress-tests your notes against your past decisions and personal axioms. Here are open contradictions and architectural drifts detected in your knowledge base and codebase.
+          Unlike sycophantic chatbots that validate whatever you say, AntiTheca actively stress-tests your notes against your past decisions and personal axioms. Here are open contradictions and architectural drifts detected in your knowledge base and codebase.
         </p>
       </div>
 
@@ -172,7 +172,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
         </div>
 
         <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
-          Engram continuously audits repository code commits against recorded Architectural Decision Records (ADRs) in <code>self_brain.db</code> to detect unauthorized architectural drift before it enters production.
+          AntiTheca continuously audits repository code commits against recorded Architectural Decision Records (ADRs) in <code>self_brain.db</code> to detect unauthorized architectural drift before it enters production.
         </p>
 
         {/* Verified Claims Grid */}
@@ -403,7 +403,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
         </div>
 
         <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginBottom: "14px" }}>
-          Engram autonomously parses unstructured notes and transcripts to detect explicit deliverables, milestones, and deadlines, surfacing them directly in your morning webhook dispatch.
+          AntiTheca autonomously parses unstructured notes and transcripts to detect explicit deliverables, milestones, and deadlines, surfacing them directly in your morning webhook dispatch.
         </p>
 
         {commitments.length > 0 ? (
@@ -708,7 +708,7 @@ export default function AdversarialView({ challenges, onRespondToChallenge, code
                     rows={3}
                     value={responseText}
                     onChange={(e) => setResponseText(e.target.value)}
-                    placeholder={responseMode === "defend" ? "Explain why this tension is justified or why the new approach supersedes the old..." : "Acknowledge the mistake and confirm how Engram should update your personal memory ladder..."}
+                    placeholder={responseMode === "defend" ? "Explain why this tension is justified or why the new approach supersedes the old..." : "Acknowledge the mistake and confirm how AntiTheca should update your personal memory ladder..."}
                     style={{
                       width: "100%",
                       padding: "10px",

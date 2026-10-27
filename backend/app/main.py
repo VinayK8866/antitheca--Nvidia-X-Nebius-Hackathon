@@ -23,25 +23,31 @@ from app.code_auditor import code_auditor
 from app.media_extractor import extract_image_content, extract_pdf_content
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-logger = logging.getLogger("engram")
+logger = logging.getLogger("antitheca")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Initializing Engram Epistemic Engine...")
+    logger.info("Initializing AntiTheca Epistemic Engine...")
     init_all_dbs()
     logger.info("Database schemas confirmed.")
     
-    # Launch autonomous 3:00 AM background scheduler
-    scheduler_task = asyncio.create_task(scheduler.start_loop())
-    logger.info("Autonomous 3:00 AM Sleep Scheduler background worker active.")
+    # Launch autonomous 3:00 AM background scheduler if enabled
+    enable_in_process = os.getenv("ENABLE_IN_PROCESS_SCHEDULER", "true").lower() in ["1", "true", "yes"]
+    scheduler_task = None
+    if enable_in_process:
+        scheduler_task = asyncio.create_task(scheduler.start_loop())
+        logger.info("Autonomous 3:00 AM Sleep Scheduler background worker active (in-process demo mode).")
+    else:
+        logger.info("In-process scheduler disabled (production mode: run 'python -m app.scheduler --daemon' or external cron).")
     
     yield
     
-    scheduler_task.cancel()
-    logger.info("Shutting down Engram...")
+    if scheduler_task:
+        scheduler_task.cancel()
+    logger.info("Shutting down AntiTheca...")
 
 app = FastAPI(
-    title="Engram — Autonomous Personal Cognitive Intelligence",
+    title="AntiTheca — Autonomous Personal Cognitive Intelligence",
     description="The AI that thinks about your knowledge while you sleep. Powered by NVIDIA Nemotron & Nebius Token Factory.",
     version="1.0.0",
     lifespan=lifespan
@@ -99,7 +105,7 @@ class DeepResearchRequest(BaseModel):
 @app.get("/")
 def root():
     return {
-        "project": "Engram",
+        "project": settings.PROJECT_NAME,
         "description": "The AI That Thinks About Your Knowledge While You Sleep",
         "powered_by": "NVIDIA Nemotron & Nebius Token Factory",
         "models": {
