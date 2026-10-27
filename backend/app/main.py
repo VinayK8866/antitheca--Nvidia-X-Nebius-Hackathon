@@ -194,8 +194,7 @@ async def ingest_file_endpoint(file: UploadFile = File(...)):
     ext = os.path.splitext(filename)[1].lower()
 
     if ext in [".png", ".jpg", ".jpeg", ".webp"]:
-        title, content, meta = extract_image_content(content_bytes, filename_or_url=filename)
-        modality = "image"
+        return ingest_pipeline.ingest_image_bytes(content_bytes, filename=filename)
     elif ext == ".pdf":
         title, content, meta = extract_pdf_content(content_bytes, filename=filename)
         modality = "pdf"

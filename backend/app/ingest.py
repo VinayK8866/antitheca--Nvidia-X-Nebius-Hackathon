@@ -151,6 +151,45 @@ class KnowledgeIngestionPipeline:
             source_path=url
         )
 
+    def ingest_image_bytes(self, image_bytes: bytes, filename: str = "slide.png") -> Dict[str, Any]:
+        """
+        Multimodal Image/Slide Ingestion Pipeline with end-to-end timestamped execution telemetry.
+        Tracks time from raw bytes upload to visual extraction, chunk embedding, and database commit.
+        """
+        import time
+        t_upload = time.perf_counter()
+        raw_kb = len(image_bytes) / 1024
+
+        from app.media_extractor import extract_image_content
+        title, img_content, meta = extract_image_content(image_bytes, filename_or_url=filename)
+        t_extracted = time.perf_counter()
+
+        res = self.ingest_text(
+            title=title,
+            content=img_content,
+            modality="image",
+            tags=["slide_upload", "image", "multimodal"],
+            source_path=f"upload://{filename}"
+        )
+        t_committed = time.perf_counter()
+
+        total_pipeline_sec = t_committed - t_upload
+        extraction_sec = t_extracted - t_upload
+        ingest_db_sec = t_committed - t_extracted
+
+        logger.info(
+            f"[TIMING: END-TO-END MULTIMODAL INGESTION] '{filename}' ({raw_kb:.1f}KB) "
+            f"TOTAL: {total_pipeline_sec:.2f}s | Visual Extraction: {extraction_sec:.2f}s | "
+            f"Embed & SQLite Commit: {ingest_db_sec*1000:.1f}ms | Doc ID: #{res.get('doc_id')}"
+        )
+        res["pipeline_latency"] = {
+            "total_sec": round(total_pipeline_sec, 3),
+            "extraction_sec": round(extraction_sec, 3),
+            "db_commit_ms": round(ingest_db_sec * 1000, 2),
+            "payload_kb": round(raw_kb, 2)
+        }
+        return res
+
     def ingest_folder(self, folder_path: str) -> Dict[str, Any]:
         """Recursively scans and bulk-ingests a local directory or Obsidian vault."""
         path = Path(folder_path).expanduser().resolve()

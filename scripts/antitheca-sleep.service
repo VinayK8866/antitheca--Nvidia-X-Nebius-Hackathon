@@ -1,0 +1,14 @@
+[Unit]
+Description=AntiTheca Autonomous Cognitive Replay Sleep Engine (One-Shot)
+After=network.target
+
+[Service]
+Type=oneshot
+User=user
+WorkingDirectory=/home/user/Private_View/Vinay/Nebius Nvidia Hackathon
+ExecStart=/bin/bash /home/user/Private_View/Vinay/Nebius Nvidia Hackathon/scripts/run_sleep_cycle.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

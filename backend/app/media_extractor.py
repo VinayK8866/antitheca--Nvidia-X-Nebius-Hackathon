@@ -165,9 +165,17 @@ def extract_pdf_content(content_bytes: bytes, filename: str = "document.pdf") ->
 # ---------------------------------------------------------------------------
 
 def extract_image_content(content_bytes: bytes, filename_or_url: str = "image.png") -> Tuple[str, str, Dict[str, Any]]:
-    """Extracts metadata, OCR text, and visual description from image binary bytes."""
+    """Extracts metadata, OCR text, and visual description from image binary bytes with sub-3-second optimization."""
+    import time
+    t_start = time.perf_counter()
     title = os.path.basename(filename_or_url)
-    metadata = {"media_type": "image", "dimensions": "unknown", "format": "unknown"}
+    raw_size_kb = len(content_bytes) / 1024
+    metadata = {
+        "media_type": "image",
+        "dimensions": "unknown",
+        "format": "unknown",
+        "raw_payload_kb": round(raw_size_kb, 2)
+    }
     ocr_text = ""
     visual_description = ""
 
@@ -187,18 +195,26 @@ def extract_image_content(content_bytes: bytes, filename_or_url: str = "image.pn
     except Exception as e:
         logger.warning(f"PIL/Image metadata extraction warning for {title}: {e}")
 
-    # Use NVIDIA Nemotron 3.5 Super-VL via Nebius Token Factory
+    # Use NVIDIA Nemotron 3.5 Super-VL via Nebius Token Factory with sub-3s optimization
     try:
         from app.llm_client import llm_client
         visual_description = llm_client.analyze_image(
             content_bytes,
-            prompt="Analyze this visual media or slide. Extract visible diagrams, workflow steps, code snippets, and key ideas."
+            prompt="Analyze this visual media or slide. Extract all visible architecture rules, text, diagrams, and workflow steps.",
+            max_tokens=350
         )
     except Exception as e:
         logger.warning(f"Nemotron Super-VL extraction note: {e}")
 
+    total_latency = time.perf_counter() - t_start
+    metadata["extraction_latency_sec"] = round(total_latency, 3)
+    logger.info(f"[TIMING: SLIDE EXTRACTION] '{title}' ({metadata['dimensions']}, {raw_size_kb:.1f}KB) processed in {total_latency:.2f}s")
+
     # Build final markdown content
-    content_lines = [f"# Visual Media: {title}", f"- **Format**: {metadata['format']} | **Dimensions**: {metadata['dimensions']}"]
+    content_lines = [
+        f"# Visual Media: {title}",
+        f"- **Format**: {metadata['format']} | **Dimensions**: {metadata['dimensions']} | **Latency**: {total_latency:.2f}s"
+    ]
     if visual_description:
         content_lines.append(f"\n## 👁️ Visual Description & Analysis\n{visual_description}")
     if ocr_text:

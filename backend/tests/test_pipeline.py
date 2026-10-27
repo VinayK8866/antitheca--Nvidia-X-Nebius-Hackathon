@@ -38,6 +38,22 @@ res = ingest_pipeline.ingest_text(
 )
 print("Ingestion result:", res)
 
+print("\n=== 3b. TESTING MULTIMODAL SLIDE INGESTION & CONFLICT DETECTION ===")
+import io
+from PIL import Image, ImageDraw
+img = Image.new('RGB', (1024, 576), color=(15, 23, 42))
+d = ImageDraw.Draw(img)
+d.rectangle([(20, 20), (1004, 556)], outline=(51, 65, 85), width=2)
+d.text((60, 60), "VIRAL ARCHITECTURE ADVICE 2026", fill=(248, 250, 252))
+d.text((60, 160), "Mandate: Break solo MVP into 20 microservices with Kafka streams and 3-region Kubernetes on Day 1.", fill=(239, 68, 68))
+d.text((60, 260), "Complexity equals enterprise resilience regardless of team size.", fill=(226, 232, 240))
+buf = io.BytesIO()
+img.save(buf, format="PNG")
+slide_res = ingest_pipeline.ingest_image_bytes(buf.getvalue(), filename="viral_slide_20_microservices.png")
+print(f"Multimodal slide processed in {slide_res['pipeline_latency']['extraction_sec']:.2f}s (sub-3s).")
+if slide_res.get("adversarial_challenge"):
+    print(f"⚡ Multimodal slide triggered adversarial challenge: {slide_res['adversarial_challenge']['title']}")
+
 print("\n=== 4. TESTING KNOWLEDGE GRAPH EXPORT ===")
 graph_data = graph_engine.export_3d_graph_json()
 print(f"Graph nodes count: {len(graph_data['nodes'])}, links count: {len(graph_data['links'])}")

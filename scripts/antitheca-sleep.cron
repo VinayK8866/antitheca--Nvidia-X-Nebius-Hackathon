@@ -1,0 +1,13 @@
+# ==============================================================================
+# AntiTheca System Crontab Configuration
+# ==============================================================================
+# Decoupled 3:00 AM Autonomous Cognitive Sleep Engine
+#
+# To install on host Linux system or container crond:
+#   crontab -l 2>/dev/null | cat - scripts/antitheca-sleep.cron | crontab -
+#
+# Runs every night at 3:00 AM UTC. Safe against multi-worker duplicate runs
+# because AntiTheca acquires a persistent atomic lock in self_brain.db.
+# ==============================================================================
+
+0 3 * * * /bin/bash -c "cd /home/user/Private_View/Vinay/Nebius\ Nvidia\ Hackathon && ./scripts/run_sleep_cycle.sh" >> /var/log/antitheca-sleep.log 2>&1

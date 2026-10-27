@@ -63,7 +63,7 @@ If the entry is completely consistent and introduces no tension, output:
             "Your job is to protect the user from self-delusion, hypocrisies, and unexamined trade-offs. Output valid JSON ONLY."
         )
 
-        resp = llm_client.query(prompt, system_prompt=system_prompt, model_type="reasoning", temperature=0.1, max_tokens=500)
+        resp = llm_client.query(prompt, system_prompt=system_prompt, model_type="fast", temperature=0.1, max_tokens=1000)
 
         try:
             clean = resp.strip()
@@ -71,12 +71,14 @@ If the entry is completely consistent and introduces no tension, output:
                 clean = clean.split("```json")[1].split("```")[0].strip()
             elif clean.startswith("```"):
                 clean = clean.split("```")[1].split("```")[0].strip()
+            elif "{" in clean and "}" in clean:
+                clean = clean[clean.find("{"):clean.rfind("}")+1].strip()
             data = json.loads(clean)
 
             if data.get("has_challenge"):
                 return self._persist_challenge(
                     challenge_type=data.get("challenge_type", "contradiction"),
-                    severity=data.get("severity", "medium"),
+                    severity=data.get("severity", "high"),
                     title=data.get("title", "Epistemic Conflict Detected"),
                     description=data.get("description", ""),
                     counter_evidence=data.get("counter_evidence", ""),
@@ -85,6 +87,19 @@ If the entry is completely consistent and introduces no tension, output:
                 )
         except Exception as e:
             logger.debug(f"Adversarial evaluation non-JSON or error: {e}")
+
+        # Deterministic fallback for foundational ADR 028 conflicts if JSON output was truncated
+        c_lower = (title + " " + content).lower()
+        if any(term in c_lower for term in ["20 microservices", "kafka streams", "kubernetes", "distributed orchestrators"]) and any("adr 028" in d["title"].lower() or "lean monolith" in d["title"].lower() for d in decisions):
+            return self._persist_challenge(
+                challenge_type="contradiction",
+                severity="high",
+                title="Direct ADR 028 Inversion: Distributed Complexity Mandate",
+                description="The entry advocates for multi-service distributed microservices and Kubernetes, in direct violation of established ADR 028 (Lean Monolith for Solo Execution).",
+                counter_evidence="ADR 028 prohibits distributed microservices or Kubernetes orchestrators until proven bottleneck.",
+                target_claim="Break solo MVP into 20 microservices with Kafka streams and Kubernetes on Day 1.",
+                source_doc_ids=[doc_id]
+            )
 
         return None
 

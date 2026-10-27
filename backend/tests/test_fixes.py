@@ -175,5 +175,101 @@ class TestFixes(unittest.TestCase):
         self.assertIsInstance(opportunities, list)
         print(f"✓ Test 7 Passed: Activator vectorized search returned {len(opportunities)} opportunities in {act_elapsed_ms:.2f}ms.")
 
+    def test_sub_3s_multimodal_slide_ingestion_and_conflict_detection(self):
+        """
+        Tests end-to-end multimodal slide processing:
+        1. Sub-3s Nemotron-3.5-Super-VL extraction on a high-res slide.
+        2. Automatic ADR 028 violation detection triggered from the extracted visual content.
+        """
+        import io
+        import time
+        from PIL import Image, ImageDraw
+        from app.ingest import ingest_pipeline
+        from app.database import get_self_db_connection
+
+        # 1. Ensure ADR 028 exists in decisions table
+        conn = get_self_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM decisions WHERE title LIKE '%ADR 028%'")
+        if not cur.fetchone():
+            cur.execute("""
+            INSERT INTO decisions (title, decision_text, rationale, context, chosen_option)
+            VALUES (?, ?, ?, ?, ?)
+            """, (
+                "ADR 028: Lean Monolith for Solo Execution",
+                "Always maintain a lean, single-service decoupled architecture with SQLite WAL. Strictly prohibit distributed microservices or multi-region Kubernetes orchestrators until proven bottleneck.",
+                "Premature distribution creates cognitive overhead that destroys solo velocity.",
+                "Initial architectural baseline",
+                "SQLite Monolith"
+            ))
+            conn.commit()
+        conn.close()
+
+        # 2. Programmatically generate binary 1080p presentation slide image
+        img = Image.new('RGB', (1024, 576), color=(15, 23, 42))
+        d = ImageDraw.Draw(img)
+        d.rectangle([(20, 20), (1004, 556)], outline=(51, 65, 85), width=2)
+        d.text((60, 60), "VIRAL ARCHITECTURE ADVICE 2026", fill=(248, 250, 252))
+        d.text((60, 160), "Mandate: Break solo MVP into 20 microservices with Kafka streams and 3-region Kubernetes on Day 1.", fill=(239, 68, 68))
+        d.text((60, 260), "Complexity equals enterprise resilience regardless of team size.", fill=(226, 232, 240))
+
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        image_bytes = buf.getvalue()
+
+        # 3. Ingest image bytes through pipeline
+        res = ingest_pipeline.ingest_image_bytes(image_bytes, filename="viral_slide_20_microservices.png")
+        self.assertIsNotNone(res)
+        self.assertEqual(res.get("modality"), "image")
+        self.assertIn("pipeline_latency", res)
+
+        # 4. Assert sub-3-second remote extraction benchmark
+        extraction_sec = res["pipeline_latency"]["extraction_sec"]
+        self.assertLess(extraction_sec, 3.0, f"Multimodal extraction took {extraction_sec}s, exceeding 3.0s benchmark")
+
+        # 5. Assert automated adversarial challenge detection from visual content
+        challenge = res.get("adversarial_challenge")
+        self.assertIsNotNone(challenge, "Multimodal slide ingestion failed to trigger adversarial challenge")
+        self.assertEqual(challenge.get("severity"), "high")
+        
+        # Verify persistence in SQLite
+        conn = get_self_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, title, severity FROM adversarial_challenges WHERE id = ?", (challenge["id"],))
+        c_row = cur.fetchone()
+        conn.close()
+        self.assertIsNotNone(c_row)
+        print(f"✓ Test 8 Passed: Multimodal slide processed in {extraction_sec:.2f}s (sub-3s) & triggered HIGH severity conflict #{challenge['id']} ('{challenge['title']}').")
+
+    def test_decoupled_external_cron_and_reboot_persistence(self):
+        """
+        Tests autonomous background cron reliability:
+        1. Executes sleep consolidation cycle via decoupled external process (scripts/run_sleep_cycle.sh).
+        2. Asserts persistent SQLite execution log.
+        3. Simulates container reboot and verifies scheduler state loads seamlessly from disk.
+        """
+        import subprocess
+        from app.database import get_self_db_connection
+        from app.scheduler import AutonomousReplayScheduler
+
+        # 1. Execute external cron CLI script out-of-process
+        res = subprocess.run(["./scripts/run_sleep_cycle.sh"], capture_output=True, text=True, timeout=30)
+        self.assertEqual(res.returncode, 0, f"External cron script failed: {res.stderr}")
+
+        # 2. Verify audit trail persisted in SQLite
+        conn = get_self_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, trigger_source, status FROM scheduler_runs WHERE trigger_source = 'external_cron_worker' ORDER BY id DESC LIMIT 1")
+        row = cur.fetchone()
+        conn.close()
+        self.assertIsNotNone(row, "External cron run was not logged in scheduler_runs SQLite table")
+
+        # 3. Simulate container reboot by instantiating new scheduler instance from persistent storage
+        rebooted_scheduler = AutonomousReplayScheduler(target_hour=3, target_minute=0)
+        status = rebooted_scheduler.get_status()
+        self.assertGreater(status["total_autonomous_runs"], 0)
+        self.assertNotEqual(status["last_run"], "None (Pending first cycle)")
+        print(f"✓ Test 9 Passed: Decoupled external cron execution & post-reboot SQLite state recovery verified.")
+
 if __name__ == "__main__":
     unittest.main()

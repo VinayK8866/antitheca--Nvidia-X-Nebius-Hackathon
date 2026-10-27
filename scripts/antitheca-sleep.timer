@@ -1,0 +1,11 @@
+[Unit]
+Description=AntiTheca Daily 3:00 AM Autonomous Replay Timer
+Persistent=true
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+RandomizedDelaySec=60
+Persistent=true
+
+[Install]
+WantedBy=timers.target
