@@ -1,8 +1,10 @@
 import json
 import logging
 from typing import Dict, Any, List
+import numpy as np
 from app.database import get_self_db_connection
 from app.embeddings import generate_embedding, blob_to_float_list, float_list_to_blob, cosine_similarity
+from app.tiered_memory import tiered_memory
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +22,7 @@ class KnowledgeArbitrageActivator:
         cur = conn.cursor()
         scored_items = []
 
-        # 1. High-Performance Indexed Vector Search for candidate chunks
+        # 1. High-Performance Indexed Vector Search for candidate chunks (sqlite-vec)
         try:
             q_blob = float_list_to_blob(query_vec)
             cur.execute("""
@@ -60,39 +62,37 @@ class KnowledgeArbitrageActivator:
             WHERE c.embedding_blob IS NOT NULL
             """)
             rows = cur.fetchall()
-            for r in rows:
-                blob = r["embedding_blob"]
-                chunk_vec = blob_to_float_list(blob)
-                sim = cosine_similarity(query_vec, chunk_vec)
-                if sim > 0.40:
-                    modality_boost = 1.2 if r["modality"] in ["reel", "decision"] else 1.0
-                    arbitrage_score = sim * modality_boost
-                    scored_items.append({
-                        "type": "document",
-                        "doc_id": r["doc_id"],
-                        "title": r["title"],
-                        "modality": r["modality"],
-                        "excerpt": r["content"][:300],
-                        "tags": json.loads(r["tags_json"] or "[]"),
-                        "similarity": round(sim, 3),
-                        "arbitrage_score": round(arbitrage_score, 3),
-                        "created_at": r["created_at"],
-                        "reason": f"High relevance ({int(sim*100)}%) to your current active context."
-                    })
+            if rows:
+                blobs = [r["embedding_blob"] for r in rows]
+                matrix = np.array([blob_to_float_list(b) for b in blobs], dtype=np.float32)
+                q = np.array(query_vec, dtype=np.float32)
+                sims = np.dot(matrix, q)
+                for idx, sim in enumerate(sims):
+                    if float(sim) > 0.40:
+                        r = rows[idx]
+                        modality_boost = 1.2 if r["modality"] in ["reel", "decision"] else 1.0
+                        arbitrage_score = float(sim) * modality_boost
+                        scored_items.append({
+                            "type": "document",
+                            "doc_id": r["doc_id"],
+                            "title": r["title"],
+                            "modality": r["modality"],
+                            "excerpt": r["content"][:300],
+                            "tags": json.loads(r["tags_json"] or "[]"),
+                            "similarity": round(float(sim), 3),
+                            "arbitrage_score": round(arbitrage_score, 3),
+                            "created_at": r["created_at"],
+                            "reason": f"High relevance ({int(float(sim)*100)}%) to your current active context."
+                        })
 
-        # 2. Score active memories
-        cur.execute("""
-        SELECT id, learned_fact, tier, weight, category FROM memories WHERE status = 'active'
-        """)
-        memories = cur.fetchall()
         conn.close()
 
-        for m in memories:
-            mem_vec = generate_embedding(m["learned_fact"])
-            sim = cosine_similarity(query_vec, mem_vec)
-            if sim > 0.45:
+        # 2. Score active memories via pre-indexed/vectorized memory search (sub-millisecond)
+        try:
+            matching_memories = tiered_memory.semantic_search_memories(query_vec, top_k=5, threshold=0.45)
+            for m in matching_memories:
                 tier_mult = 1.3 if m["tier"] == "tier_wisdom" else (1.1 if m["tier"] == "tier_fact" else 1.0)
-                arbitrage_score = sim * tier_mult
+                arbitrage_score = m["similarity"] * tier_mult
                 scored_items.append({
                     "type": "memory",
                     "memory_id": m["id"],
@@ -100,10 +100,12 @@ class KnowledgeArbitrageActivator:
                     "modality": "wisdom" if m["tier"] == "tier_wisdom" else "fact",
                     "excerpt": m["learned_fact"],
                     "tags": [m["tier"], m["category"]],
-                    "similarity": round(sim, 3),
+                    "similarity": round(m["similarity"], 3),
                     "arbitrage_score": round(arbitrage_score, 3),
                     "reason": f"Established precedent ({m['tier']}) applicable to this dilemma."
                 })
+        except Exception as e_mem:
+            logger.debug(f"Memory arbitrage scoring warning: {e_mem}")
 
         scored_items.sort(key=lambda x: x["arbitrage_score"], reverse=True)
         return scored_items[:top_k]

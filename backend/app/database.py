@@ -149,9 +149,32 @@ def init_self_db(db_path: Optional[str] = None):
         last_observed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         status TEXT DEFAULT 'active', -- active, superseded, decayed, archived
         tags_json TEXT,
+        embedding_blob BLOB,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
+
+    try:
+        cursor.execute("ALTER TABLE memories ADD COLUMN embedding_blob BLOB")
+    except Exception:
+        pass
+
+    # High-Performance Memory Vector Index (sqlite-vec)
+    try:
+        cursor.execute("""
+        CREATE VIRTUAL TABLE IF NOT EXISTS vec_memories USING vec0(
+            memory_id INTEGER PRIMARY KEY,
+            embedding float[384] distance_metric=cosine
+        );
+        """)
+        cursor.execute("""
+        INSERT INTO vec_memories (memory_id, embedding)
+        SELECT id, embedding_blob FROM memories
+        WHERE embedding_blob IS NOT NULL
+          AND id NOT IN (SELECT memory_id FROM vec_memories);
+        """)
+    except Exception as e_vec_m:
+        logger.debug(f"Could not initialize vec_memories virtual table: {e_vec_m}")
 
     # Decisions & Case-Based Precedents
     cursor.execute("""

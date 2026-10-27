@@ -6,6 +6,7 @@ import networkx as nx
 
 from app.database import get_self_db_connection
 from app.embeddings import generate_embedding, float_list_to_blob, blob_to_float_list, cosine_similarity
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -118,18 +119,22 @@ class KnowledgeGraphEngine:
         """, (current_doc_id,))
         candidates = cur.fetchall()
 
+        valid_cands = [c for c in candidates if c["embedding_blob"]]
+        if not valid_cands:
+            return
+
+        cand_matrix = np.array([blob_to_float_list(c["embedding_blob"]) for c in valid_cands], dtype=np.float32)
+        q = np.array(current_vec, dtype=np.float32)
+        sims = np.dot(cand_matrix, q)
+
         scores = []
-        for cand in candidates:
-            other_blob = cand["embedding_blob"]
-            if other_blob:
-                other_vec = blob_to_float_list(other_blob)
-                sim = cosine_similarity(current_vec, other_vec)
-                if sim >= threshold:
-                    scores.append((cand["other_node_id"], sim))
+        for idx, sim in enumerate(sims):
+            if float(sim) >= threshold:
+                scores.append((valid_cands[idx]["other_node_id"], float(sim)))
 
         scores.sort(key=lambda x: x[1], reverse=True)
         for target_node_id, sim in scores[:top_k]:
-            self.add_edge(conn, current_node_id, target_node_id, relation_type="similarity", weight=float(sim))
+            self.add_edge(conn, current_node_id, target_node_id, relation_type="similarity", weight=round(float(sim), 4))
 
     def export_3d_graph_json(self) -> Dict[str, Any]:
         """Exports graph in 3D force-directed format for Next.js / Three.js frontend."""

@@ -100,5 +100,28 @@ class TestFixes(unittest.TestCase):
         self.assertTrue(audit_res["scanned_files_count"] > 0)
         print(f"✓ Test 5 Passed: Python AST code auditor verified ({audit_res['scanned_files_count']} files scanned, 100% compliant).")
 
+    def test_indexed_memory_and_vectorized_retrieval(self):
+        import time
+        from app.embeddings import generate_embedding
+        from app.tiered_memory import tiered_memory
+        from app.activator import activator
+
+        q_vec = generate_embedding("SQLite WAL performance and lean monolith architecture")
+
+        # 1. Test Tiered Memory semantic search
+        t0 = time.perf_counter()
+        results = tiered_memory.semantic_search_memories(q_vec, top_k=3, threshold=0.2)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        self.assertIsInstance(results, list)
+        self.assertLess(elapsed_ms, 50.0) # Sub-50ms retrieval benchmark
+        print(f"✓ Test 6 Passed: Pre-indexed memory vector search returned {len(results)} matches in {elapsed_ms:.2f}ms.")
+
+        # 2. Test Activator vectorized arbitrage search without on-the-fly embedding bottlenecks
+        t1 = time.perf_counter()
+        opportunities = activator.find_arbitrage_opportunities("We are deciding whether to introduce Redis for caching.", top_k=3)
+        act_elapsed_ms = (time.perf_counter() - t1) * 1000
+        self.assertIsInstance(opportunities, list)
+        print(f"✓ Test 7 Passed: Activator vectorized search returned {len(opportunities)} opportunities in {act_elapsed_ms:.2f}ms.")
+
 if __name__ == "__main__":
     unittest.main()
