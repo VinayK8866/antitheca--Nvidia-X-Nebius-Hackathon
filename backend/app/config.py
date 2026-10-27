@@ -36,8 +36,13 @@ class Settings(BaseSettings):
     SELF_DB_PATH: Path = DEFAULT_DATA_DIR / "self_brain.db"
     WORLD_DB_PATH: Path = DEFAULT_DATA_DIR / "world_brain.db"
 
-    # Media / Instagram scraping
+    # Media & Social Extraction (Residential Proxies & Authenticated Sessions)
+    RESIDENTIAL_PROXY_URL: str = ""
+    PROXY_URL: str = ""
     INSTAGRAM_SESSION_ID: str = ""
+    INSTAGRAM_COOKIES_FILE: str = ""
+    TIKTOK_SESSION_ID: str = ""
+    TIKTOK_COOKIES_FILE: str = ""
 
     class Config:
         env_file = [

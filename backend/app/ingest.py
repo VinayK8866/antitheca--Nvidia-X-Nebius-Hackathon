@@ -137,13 +137,16 @@ class KnowledgeIngestionPipeline:
         tags = [modality]
         if "instagram" in url.lower():
             tags.append("instagram_reel")
+        elif "tiktok" in url.lower():
+            tags.append("tiktok_reel")
         elif "youtube" in url.lower():
             tags.append("youtube_video")
 
+        is_reel = "instagram" in url.lower() or "tiktok" in url.lower()
         return self.ingest_text(
             title=title,
             content=content,
-            modality="reel" if "instagram" in url.lower() else modality,
+            modality="reel" if is_reel else modality,
             tags=tags,
             source_path=url
         )

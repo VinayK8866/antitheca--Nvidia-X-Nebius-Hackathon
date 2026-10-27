@@ -66,13 +66,65 @@ class TestFixes(unittest.TestCase):
     def test_media_extractor_scope_and_resilience(self):
         import app.media_extractor as me
         self.assertTrue(hasattr(me, "tempfile"))
-        
-        # Test with a mock reel URL (should handle cleanly without NameError or crash)
+        self.assertTrue(hasattr(me, "get_proxy_url"))
+        self.assertTrue(hasattr(me, "get_proxy_dict"))
+        self.assertTrue(hasattr(me, "resolve_cookies"))
+        self.assertTrue(hasattr(me, "extract_tiktok_video"))
+
+        # 1. Test Proxy resolution
+        orig_proxy = os.environ.get("RESIDENTIAL_PROXY_URL")
+        try:
+            os.environ["RESIDENTIAL_PROXY_URL"] = "http://testuser:testpass@residential.proxy.net:8888"
+            self.assertEqual(me.get_proxy_url(), "http://testuser:testpass@residential.proxy.net:8888")
+            p_dict = me.get_proxy_dict()
+            self.assertIsNotNone(p_dict)
+            self.assertEqual(p_dict["http"], "http://testuser:testpass@residential.proxy.net:8888")
+            self.assertEqual(p_dict["https"], "http://testuser:testpass@residential.proxy.net:8888")
+        finally:
+            if orig_proxy:
+                os.environ["RESIDENTIAL_PROXY_URL"] = orig_proxy
+            else:
+                os.environ.pop("RESIDENTIAL_PROXY_URL", None)
+
+        # 2. Test Cookie Vaulting
+        orig_ig_sess = os.environ.get("INSTAGRAM_SESSION_ID")
+        try:
+            os.environ["INSTAGRAM_SESSION_ID"] = "mock_ig_session_xyz123"
+            cookie_path, is_temp, sess_id = me.resolve_cookies("instagram")
+            self.assertTrue(is_temp)
+            self.assertEqual(sess_id, "mock_ig_session_xyz123")
+            self.assertTrue(os.path.exists(cookie_path))
+            with open(cookie_path, "r") as cf:
+                c_content = cf.read()
+                self.assertIn(".instagram.com", c_content)
+                self.assertIn("mock_ig_session_xyz123", c_content)
+            if os.path.exists(cookie_path):
+                os.remove(cookie_path)
+        finally:
+            if orig_ig_sess:
+                os.environ["INSTAGRAM_SESSION_ID"] = orig_ig_sess
+            else:
+                os.environ.pop("INSTAGRAM_SESSION_ID", None)
+
+        # 3. Test TikTok Video Extraction with verified demo fixture
+        tt_title, tt_content, tt_meta = me.extract_tiktok_video("https://www.tiktok.com/@tech_lead/video/demo")
+        self.assertIsInstance(tt_title, str)
+        self.assertIn("Why You Must Replace Postgres", tt_title)
+        self.assertEqual(tt_meta["media_type"], "tiktok_reel")
+        self.assertTrue(tt_meta.get("demo_fixture_used", False))
+        self.assertIn("Kafka Streams", tt_content)
+
+        # 4. Test Universal Media Dispatcher for TikTok
+        disp_title, disp_content, disp_modality, disp_meta = me.extract_media_from_url("https://www.tiktok.com/@tech_lead/video/demo")
+        self.assertEqual(disp_modality, "video")
+        self.assertEqual(disp_meta["media_type"], "tiktok_reel")
+
+        # 5. Test Instagram Reel with verified demo fixture
         title, content, meta = me.extract_instagram_reel("https://www.instagram.com/reel/C8q8q1mP3eT/")
         self.assertIsInstance(title, str)
         self.assertIsInstance(content, str)
         self.assertIn("media_type", meta)
-        print("✓ Test 4 Passed: Media extractor scope & resilient fallback verified.")
+        print("✓ Test 4 Passed: Media extractor proxy routing, cookie vaulting & TikTok ingestion verified.")
 
     def test_ast_code_auditor(self):
         import ast
