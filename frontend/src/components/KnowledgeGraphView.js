@@ -198,15 +198,15 @@ export default function KnowledgeGraphView({ graphData }) {
 
   // Configure dynamic D3 physics
   useEffect(() => {
-    if (fgRef.current) {
+    if (fgRef.current && typeof fgRef.current.d3VelocityDecay === "function") {
       fgRef.current.d3VelocityDecay(0.32);
 
-      const charge = fgRef.current.d3Force("charge");
+      const charge = fgRef.current.d3Force?.("charge");
       if (charge) {
         charge.strength(chargeStrength);
         charge.distanceMax(800);
       }
-      const link = fgRef.current.d3Force("link");
+      const link = fgRef.current.d3Force?.("link");
       if (link) {
         link.distance((l) => (l.relation === "tagged" ? linkDistance * 0.7 : linkDistance));
         link.strength(0.65);
@@ -217,7 +217,7 @@ export default function KnowledgeGraphView({ graphData }) {
   // Automatic zoom to fit
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (fgRef.current) {
+      if (typeof fgRef.current?.zoomToFit === "function") {
         fgRef.current.zoomToFit(500, 85);
       }
     }, 700);
@@ -341,13 +341,22 @@ export default function KnowledgeGraphView({ graphData }) {
       ctx.lineWidth = 0.85 / globalScale;
 
       ctx.beginPath();
-      ctx.roundRect?.(
-        labelX - textWidth / 2 - padX,
-        labelY - fontSize + 1,
-        textWidth + padX * 2,
-        fontSize + padY * 2,
-        4
-      );
+      if (typeof ctx.roundRect === "function") {
+        ctx.roundRect(
+          labelX - textWidth / 2 - padX,
+          labelY - fontSize + 1,
+          textWidth + padX * 2,
+          fontSize + padY * 2,
+          4
+        );
+      } else {
+        ctx.rect(
+          labelX - textWidth / 2 - padX,
+          labelY - fontSize + 1,
+          textWidth + padX * 2,
+          fontSize + padY * 2
+        );
+      }
       ctx.fill();
       ctx.stroke();
 
@@ -385,19 +394,29 @@ export default function KnowledgeGraphView({ graphData }) {
 
   // Zoom handlers
   const handleZoomIn = () => {
-    if (fgRef.current) fgRef.current.zoom(fgRef.current.zoom() * 1.4, 300);
+    if (typeof fgRef.current?.zoom === "function") {
+      const current = fgRef.current.zoom();
+      fgRef.current.zoom(current * 1.4, 300);
+    }
   };
   const handleZoomOut = () => {
-    if (fgRef.current) fgRef.current.zoom(fgRef.current.zoom() / 1.4, 300);
+    if (typeof fgRef.current?.zoom === "function") {
+      const current = fgRef.current.zoom();
+      fgRef.current.zoom(current / 1.4, 300);
+    }
   };
   const handleZoomFit = () => {
-    if (fgRef.current) fgRef.current.zoomToFit(450, 75);
+    if (typeof fgRef.current?.zoomToFit === "function") {
+      fgRef.current.zoomToFit(450, 75);
+    }
   };
   const handleResetForces = () => {
     setChargeStrength(-520);
     setLinkDistance(130);
     setParticleSpeed(0.006);
-    if (fgRef.current) fgRef.current.zoomToFit(400, 75);
+    if (typeof fgRef.current?.zoomToFit === "function") {
+      fgRef.current.zoomToFit(400, 75);
+    }
   };
 
   // Backlinks for drawer
@@ -419,8 +438,12 @@ export default function KnowledgeGraphView({ graphData }) {
   const handleJumpToNode = (targetNode) => {
     setSelectedNode(targetNode);
     if (fgRef.current && targetNode.x !== undefined && targetNode.y !== undefined) {
-      fgRef.current.centerAt(targetNode.x, targetNode.y, 400);
-      fgRef.current.zoom(2.1, 400);
+      if (typeof fgRef.current.centerAt === "function") {
+        fgRef.current.centerAt(targetNode.x, targetNode.y, 400);
+      }
+      if (typeof fgRef.current.zoom === "function") {
+        fgRef.current.zoom(2.1, 400);
+      }
     }
   };
 

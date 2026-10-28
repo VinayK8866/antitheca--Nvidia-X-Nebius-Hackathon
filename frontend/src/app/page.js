@@ -47,22 +47,37 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get("tab");
-      if (tabParam && ["overview", "replay", "graph", "challenges", "console"].includes(tabParam)) {
-        setActiveTab(tabParam);
+    const syncTabFromUrl = () => {
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get("tab");
+        if (tabParam && ["overview", "replay", "graph", "challenges", "console"].includes(tabParam)) {
+          setActiveTab(tabParam);
+        }
       }
-    }
+    };
+
+    syncTabFromUrl();
+    window.addEventListener("popstate", syncTabFromUrl);
     refreshAll();
+
+    return () => {
+      window.removeEventListener("popstate", syncTabFromUrl);
+    };
   }, []);
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
     if (typeof window !== "undefined") {
-      const url = new URL(window.location);
-      url.searchParams.set("tab", tabId);
-      window.history.replaceState({}, "", url);
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", tabId);
+        // Preserve Next.js router internal state to prevent App Router desync
+        const currentState = window.history.state || {};
+        window.history.replaceState(currentState, "", url.pathname + url.search);
+      } catch {
+        // Fallback gracefully
+      }
     }
   };
 
