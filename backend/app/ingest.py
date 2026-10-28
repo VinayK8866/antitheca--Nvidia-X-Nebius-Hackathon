@@ -200,7 +200,12 @@ class KnowledgeIngestionPipeline:
         """Recursively scans and bulk-ingests a local directory or Obsidian vault."""
         path = Path(folder_path).expanduser().resolve()
         if not path.exists() or not path.is_dir():
-            raise FileNotFoundError(f"Directory not found: {folder_path}")
+            fallback_demo = Path(__file__).resolve().parent.parent / "demo_vault"
+            if "demo_vault" in str(folder_path) and fallback_demo.exists():
+                logger.info(f"Using bundled demo vault at: {fallback_demo}")
+                path = fallback_demo
+            else:
+                raise FileNotFoundError(f"Directory not found: {folder_path}")
 
         supported_exts = {".md", ".txt", ".json", ".png", ".jpg", ".jpeg", ".webp", ".pdf"}
         scanned_files = []

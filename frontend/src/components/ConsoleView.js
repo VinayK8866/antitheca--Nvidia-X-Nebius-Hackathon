@@ -109,7 +109,7 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
   };
 
   const handleIngestDemoVault = async () => {
-    const demoPath = "/home/user/Private_View/Vinay/Nebius Nvidia Hackathon/backend/demo_vault";
+    const demoPath = "demo_vault";
     setFolderPath(demoPath);
     setIsIngesting(true);
     setIngestStatus({ type: "info", msg: "Scanning and bulk-ingesting sample engineering vault..." });
