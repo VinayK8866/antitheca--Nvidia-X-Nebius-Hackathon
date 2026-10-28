@@ -142,14 +142,20 @@ class KnowledgeIngestionPipeline:
         elif "youtube" in url.lower():
             tags.append("youtube_video")
 
+        from app.sandboxes import openshell_guard
+        security_posture = openshell_guard.get_security_posture()
+        logger.info(f"Ingesting URL under OpenShell security posture: {security_posture['enforcement_mode']}")
+
         is_reel = "instagram" in url.lower() or "tiktok" in url.lower()
-        return self.ingest_text(
+        res = self.ingest_text(
             title=title,
             content=content,
             modality="reel" if is_reel else modality,
             tags=tags,
             source_path=url
         )
+        res["openshell_isolation"] = security_posture
+        return res
 
     def ingest_image_bytes(self, image_bytes: bytes, filename: str = "slide.png") -> Dict[str, Any]:
         """

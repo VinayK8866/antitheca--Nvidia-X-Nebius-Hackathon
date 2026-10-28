@@ -21,6 +21,7 @@ from app.router import router
 from app.scheduler import scheduler
 from app.code_auditor import code_auditor
 from app.media_extractor import extract_image_content, extract_pdf_content
+from app.sandboxes import openshell_guard
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("antitheca")
@@ -158,6 +159,7 @@ def get_system_status():
         "tavily": {
             "is_live": tavily_client.is_live
         },
+        "openshell_guard": openshell_guard.get_security_posture(),
         "scheduler": scheduler.get_status(),
         "epistemic_stats": {
             "total_knowledge_atoms": total_docs,

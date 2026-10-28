@@ -57,6 +57,9 @@ AntiTheca (*Anti* + *Theca*, "The Adversarial Vault") is an autonomous personal 
 7. **Temporal Commitment & Deadline Radar**: Scans messy brain dumps and meeting notes for hidden deliverables and deadlines, grouping them by urgency and surfacing them in the Morning Dispatch.
 8. **5-Phase Cognitive Defrag & Tag Garden Hygiene**: Periodically audits knowledge health, pruning orphan tags, flagging decaying notes that lack backlinks, and recommending archival candidates for `04-Archive/`.
 9. **Static Epistemic AST Code Drift Auditor**: Automatically parses the Python Abstract Syntax Tree (`ast.NodeVisitor`) of the codebase to verify structural compliance with documented Architecture Decision Records (e.g. ADR 028 lean monolith boundaries, ADR 031 database isolation, and secret token sovereignty).
+10. **NVIDIA OpenShell & NemoClaw Isolation Guard**: Enforces sandbox containment for untrusted web pages, URLs, and reel transcript scrapers, blocking indirect prompt injection and data exfiltration while reporting security posture telemetry to the live dashboard.
+11. **Hermes Agent Epistemic Guard Skill**: Plugs directly into Nous Research's Hermes Agent harness (`integrations/hermes/`), ensuring autonomous agents cross-examine user requests against past ADRs before taking destructive actions.
+12. **Nebius Serverless Batch Architecture**: Ephemeral container job manifest (`deploy/nebius_serverless/`) that executes the 3:00 AM sleep replay on scheduled cron without keeping an idle server running 24/7.
 
 ---
 
@@ -102,9 +105,12 @@ AntiTheca (*Anti* + *Theca*, "The Adversarial Vault") is an autonomous personal 
 
 ### Built With
 - `Nebius Token Factory`
+- `Nebius Serverless AI Jobs`
 - `NVIDIA Nemotron 3 Ultra 550B`
 - `NVIDIA Nemotron 3.5 Super-VL`
 - `NVIDIA Nemotron Mini 4B`
+- `NVIDIA OpenShell & NemoClaw Runtime`
+- `Hermes Agent (Nous Research)`
 - `Tavily AI Search API`
 - `Python 3.11 & FastAPI`
 - `SQLite WAL Mode`

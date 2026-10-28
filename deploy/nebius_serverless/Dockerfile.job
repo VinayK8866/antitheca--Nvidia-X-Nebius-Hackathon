@@ -1,0 +1,30 @@
+# =============================================================================
+# Nebius Serverless Batch Job Container: 3:00 AM Cognitive Sleep Replay Engine
+# Runs autonomously on a cron trigger, executes synthesis with Nemotron 3 Ultra 550B,
+# writes the daily briefing, and exits immediately (Zero Idle Compute Cost).
+# =============================================================================
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python requirements
+COPY backend/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend application source
+COPY backend /app
+
+# Set environment
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Nebius Serverless entrypoint: execute one sleep replay consolidation cycle and exit
+ENTRYPOINT ["python", "-m", "app.scheduler", "--once"]
+

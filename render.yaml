@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: antitheca-backend
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: ./render-build.sh
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: NEBIUS_BASE_URL
+        value: https://api.tokenfactory.nebius.com/v1/
+      - key: NVIDIA_REASONING_MODEL
+        value: nvidia/Nemotron-3-Ultra-550b-a55b
+      - key: NVIDIA_FAST_MODEL
+        value: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B
+      - key: NVIDIA_VL_MODEL
+        value: nvidia/Nemotron-3.5-Super-VL
+      - key: NEBIUS_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false

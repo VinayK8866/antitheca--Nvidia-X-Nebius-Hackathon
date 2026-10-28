@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, Network, AlertTriangle, MessageSquareCode, LayoutDashboard, Zap } from "lucide-react";
+import { Sparkles, Network, AlertTriangle, MessageSquareCode, LayoutDashboard, Zap, Shield } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar({ activeTab, setActiveTab, systemStatus, schedulerStatus, onTriggerReplay, isReplaying }) {
@@ -118,6 +118,24 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus, schedule
             <div className="live-pulse-dot" />
             <span>NVIDIA Nemotron 3 Ultra 550B</span>
           </div>
+
+          {systemStatus?.openshell_guard && (
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              fontSize: "0.72rem",
+              color: "var(--text-secondary)",
+              fontFamily: "var(--font-geist-mono), 'JetBrains Mono', monospace",
+              padding: "2px 8px",
+              borderRadius: "4px",
+              background: "var(--bg-subtle)",
+              border: "1px solid var(--border-hairline)"
+            }} title={`Sandbox: ${systemStatus.openshell_guard.enforcement_mode}`}>
+              <Shield size={12} style={{ color: systemStatus.openshell_guard.openshell_detected ? "#10b981" : "#6366f1" }} />
+              <span>{systemStatus.openshell_guard.openshell_detected ? "OpenShell: Sandboxed" : "OpenShell Guard: Enforced"}</span>
+            </div>
+          )}
         </div>
       </div>
 

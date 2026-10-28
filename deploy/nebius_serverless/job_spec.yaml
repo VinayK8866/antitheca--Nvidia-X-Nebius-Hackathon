@@ -1,0 +1,67 @@
+# =============================================================================
+# Nebius AI Cloud — Serverless Job Specification
+# Workload: AntiTheca 3:00 AM Autonomous Epistemic Consolidation Cycle
+# =============================================================================
+
+apiVersion: serverless.nebius.ai/v1alpha1
+kind: Job
+metadata:
+  name: antitheca-sleep-replay-engine
+  namespace: default
+  labels:
+    app.kubernetes.io/name: antitheca
+    app.kubernetes.io/component: cognitive-consolidation
+    project: nebius-nvidia-hackathon-2026
+spec:
+  # Schedule: Triggers every morning at 03:00 AM UTC
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 14
+  failedJobsHistoryLimit: 7
+  
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: sleep-replay-worker
+          image: cr.nebius.ai/antitheca/sleep-worker:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.scheduler", "--once"]
+          
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+              
+          env:
+            - name: NEBIUS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: antitheca-secrets
+                  key: nebius-api-key
+            - name: NEBIUS_BASE_URL
+              value: "https://api.tokenfactory.nebius.com/v1/"
+            - name: NVIDIA_REASONING_MODEL
+              value: "nvidia/Nemotron-3-Ultra-550b-a55b"
+            - name: NVIDIA_FAST_MODEL
+              value: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"
+            - name: TAVILY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: antitheca-secrets
+                  key: tavily-api-key
+            - name: DATA_DIR
+              value: "/mnt/sovereign-vault/data"
+              
+          volumeMounts:
+            - name: vault-storage
+              mountPath: /mnt/sovereign-vault
+              
+      volumes:
+        - name: vault-storage
+          persistentVolumeClaim:
+            claimName: antitheca-sovereign-vault-pvc
+

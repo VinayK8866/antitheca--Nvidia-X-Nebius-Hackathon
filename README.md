@@ -152,6 +152,19 @@ AntiTheca queries Tavily in parallel, deduplicates sources, computes an empirica
 - **Knowledge Decay Detection**: Detects stale notes with zero incoming links and flags them as archival candidates for `04-Archive/`.
 - **Structural Defrag Report**: Generates an actionable hygiene markdown audit during the 3:00 AM sleep replay or on-demand.
 
+### 10. NVIDIA OpenShell & NemoClaw Isolation Guard (`backend/app/sandboxes/`)
+- **Containerized Network & Scraping Isolation**: Wraps untrusted external URL fetches, web articles, and reel transcript scraping inside NVIDIA OpenShell sandboxes.
+- **Kernel-Level Policy Enforcement**: Restricts filesystem access (`DENIED` outside scratch buffers), enforces HTTP/HTTPS egress allowlists, and protects against indirect prompt injection attacks from adversarial web pages.
+- **Graceful Fallback & Live Telemetry**: Reports real-time containment posture via `/api/status` and surfaces the OpenShell Security Badge directly in the navigation console.
+
+### 11. Hermes Agent Epistemic Guard Skill (`integrations/hermes/`)
+- **Autonomous Conscience for Hermes**: Provides a production-grade tool skill (`SKILL.md` + `antitheca_skill.py`) enabling Nous Hermes agents to consult AntiTheca before executing commands.
+- **Zero-Sycophancy Gatekeeper**: When a user instructs Hermes to carry out an architectural shift (e.g. *"Convert monolith into 20 microservices"*), Hermes queries AntiTheca first, receives an ADR 028 tension warning, and halts execution to challenge the user rather than blindly generating contradictory code.
+
+### 12. Nebius Serverless AI Batch Job (`deploy/nebius_serverless/`)
+- **Zero-Idle Cloud Consolidation**: Packages the 3:00 AM Autonomous Sleep Engine into an ephemeral container job specification (`job_spec.yaml` + `Dockerfile.job`).
+- **On-Demand H100/CPU Trigger**: Runs on a scheduled cron trigger (`0 3 * * *`) on Nebius Serverless AI Jobs, mounts the sovereign vault volume, executes Tavily research + Nemotron 3 Ultra 550B synthesis, dispatches webhooks, and immediately exits with $0 idle compute cost.
+
 ---
 
 ## 🚀 Quickstart Guide
