@@ -17,7 +17,8 @@ Copy and paste these exact fields directly into the Devpost submission portal fo
 ---
 
 ### 🔗 Official Submission Links (Required by Devpost)
-- **Public Live Demo URL**: `https://antitheca-demo.loca.lt` *(Live HTTPS tunnel via `./scripts/expose_live_demo.sh`)*
+- **Public Live Demo URL**: `https://antitheca-nvidia-x-nebius-hackathon.vercel.app` *(Live Production Deployment on Vercel + Render)*
+- **Backend API & Swagger Docs**: `https://antitheca-backend.onrender.com/docs`
 - **3-Minute Video Demo URL**: `https://youtu.be/YOUR_VIDEO_ID` *(3-Minute walkthrough — see [DEMO_VIDEO_SCRIPT.md](file:///home/user/Private_View/Vinay/Nebius%20Nvidia%20Hackathon/DEMO_VIDEO_SCRIPT.md))*
 - **GitHub Repository**: `https://github.com/VinayK8866/antitheca--Nvidia-X-Nebius-Hackathon`
 

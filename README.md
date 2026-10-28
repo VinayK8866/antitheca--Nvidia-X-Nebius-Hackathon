@@ -18,7 +18,7 @@
 
 | 🌐 **Live Public Demo** | 🎬 **3-Minute Video Script** | 🏆 **Devpost Manifest** | 🚀 **1-Command Start** |
 | :---: | :---: | :---: | :---: |
-| [`antitheca-demo.loca.lt`](https://antitheca-demo.loca.lt) | [`DEMO_VIDEO_SCRIPT.md`](DEMO_VIDEO_SCRIPT.md) | [`DEVPOST_SUBMISSION.md`](DEVPOST_SUBMISSION.md) | `./start.sh` |
+| [`antitheca-app.vercel.app`](https://antitheca-nvidia-x-nebius-hackathon.vercel.app) | [`DEMO_VIDEO_SCRIPT.md`](DEMO_VIDEO_SCRIPT.md) | [`DEVPOST_SUBMISSION.md`](DEVPOST_SUBMISSION.md) | `./start.sh` |
 
 </div>
 
