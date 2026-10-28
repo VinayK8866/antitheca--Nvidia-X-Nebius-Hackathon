@@ -45,7 +45,9 @@ class KnowledgeIngestionPipeline:
         modality: str = "note",
         tags: Optional[List[str]] = None,
         provenance: str = "self",
-        source_path: Optional[str] = None
+        source_path: Optional[str] = None,
+        run_adversarial: bool = True,
+        extract_commitments: bool = True
     ) -> Dict[str, Any]:
         """Ingests a text/markdown entry into self_brain.db."""
         # 1. Privacy & Secret Redaction
@@ -112,11 +114,21 @@ class KnowledgeIngestionPipeline:
         graph_engine.sync_document_to_graph(doc_id, title, sanitized_content, modality)
 
         # 6. Run Adversarial Stress-Test
-        challenge = challenger.evaluate_content_for_challenges(doc_id, title, sanitized_content)
+        challenge = None
+        if run_adversarial:
+            try:
+                challenge = challenger.evaluate_content_for_challenges(doc_id, title, sanitized_content)
+            except Exception as e:
+                logger.warning(f"Adversarial evaluation skipped: {e}")
 
         # 7. Extract Action Items & Temporal Commitments (Deadline Radar)
-        from app.temporal_radar import temporal_radar
-        extracted_commitments = temporal_radar.extract_commitments_from_text(doc_id, title, sanitized_content)
+        extracted_commitments = []
+        if extract_commitments:
+            try:
+                from app.temporal_radar import temporal_radar
+                extracted_commitments = temporal_radar.extract_commitments_from_text(doc_id, title, sanitized_content)
+            except Exception as e:
+                logger.warning(f"Temporal radar skipped: {e}")
 
         logger.info(f"Ingested document #{doc_id}: '{title}' ({len(chunks)} chunks, commitments={len(extracted_commitments)})")
         return {
@@ -198,8 +210,20 @@ class KnowledgeIngestionPipeline:
 
     def ingest_folder(self, folder_path: str) -> Dict[str, Any]:
         """Recursively scans and bulk-ingests a local directory or Obsidian vault."""
-        path = Path(folder_path).expanduser().resolve()
-        if not path.exists() or not path.is_dir():
+        candidate_paths = [
+            Path(folder_path).expanduser().resolve(),
+            Path(__file__).resolve().parent.parent / folder_path,
+            Path.cwd() / folder_path,
+            Path.cwd() / "backend" / folder_path,
+        ]
+        
+        path = None
+        for p in candidate_paths:
+            if p.exists() and p.is_dir():
+                path = p
+                break
+
+        if not path:
             fallback_demo = Path(__file__).resolve().parent.parent / "demo_vault"
             if "demo_vault" in str(folder_path) and fallback_demo.exists():
                 logger.info(f"Using bundled demo vault at: {fallback_demo}")
@@ -245,7 +269,9 @@ class KnowledgeIngestionPipeline:
                         content=content,
                         modality=modality,
                         tags=["vault_import", modality],
-                        source_path=str(file_path)
+                        source_path=str(file_path),
+                        run_adversarial=False,  # Baseline vault is truth; don't run 14 sequential 550B LLM calls
+                        extract_commitments=True
                     )
                     ingested.append({"title": title, "path": rel_path, "modality": modality})
                     if res.get("adversarial_challenge"):
@@ -260,7 +286,9 @@ class KnowledgeIngestionPipeline:
                         content=img_content,
                         modality="image",
                         tags=["vault_import", "image"],
-                        source_path=str(file_path)
+                        source_path=str(file_path),
+                        run_adversarial=False,
+                        extract_commitments=False
                     )
                     ingested.append({"title": title, "path": rel_path, "modality": "image"})
                     if res.get("adversarial_challenge"):
@@ -274,7 +302,9 @@ class KnowledgeIngestionPipeline:
                         content=pdf_content,
                         modality="pdf",
                         tags=["vault_import", "pdf"],
-                        source_path=str(file_path)
+                        source_path=str(file_path),
+                        run_adversarial=False,
+                        extract_commitments=False
                     )
                     ingested.append({"title": title, "path": rel_path, "modality": "pdf"})
                     if res.get("adversarial_challenge"):
