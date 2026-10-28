@@ -10,3 +10,4 @@ echo "📦 Installing AntiTheca backend dependencies..."
 pip install --no-cache-dir -r requirements.txt
 
 echo "✅ Build completed successfully."
+
