@@ -1,18 +1,16 @@
 "use client";
 
-import { Sparkles, Network, AlertTriangle, MessageSquareCode, Cpu, Clock, Zap } from "lucide-react";
+import { Sparkles, Network, AlertTriangle, MessageSquareCode, LayoutDashboard, Zap } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar({ activeTab, setActiveTab, systemStatus, schedulerStatus, onTriggerReplay, isReplaying }) {
   const tabs = [
+    { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "replay", label: "Cognitive Replay", icon: Sparkles },
     { id: "graph", label: "Knowledge Graph", icon: Network },
     { id: "challenges", label: "Adversarial Radar", icon: AlertTriangle, badge: systemStatus?.epistemic_stats?.open_adversarial_challenges },
     { id: "console", label: "Console & Ingest", icon: MessageSquareCode }
   ];
-
-  const isCronActive = schedulerStatus?.is_enabled ?? true;
-  const timeUntilSleep = schedulerStatus?.time_until_sleep_cycle || "12h 4m";
 
   return (
     <header style={{
@@ -30,7 +28,20 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus, schedule
     }}>
       {/* Brand & Engram Architectural Logo */}
       <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", color: "inherit" }}>
+        <button
+          onClick={() => setActiveTab("overview")}
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            color: "inherit",
+            textAlign: "left"
+          }}
+        >
           {/* Engram / AntiTheca Geometric Mark */}
           <div style={{
             width: "32px",
@@ -85,9 +96,9 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus, schedule
               Architecting Cognition
             </div>
           </div>
-        </a>
+        </button>
 
-        {/* Status Telemetry Pill (Engram Clinical Style) */}
+        {/* Status Telemetry Pill */}
         <div style={{
           display: "flex",
           alignItems: "center",
@@ -106,18 +117,6 @@ export default function Navbar({ activeTab, setActiveTab, systemStatus, schedule
           }}>
             <div className="live-pulse-dot" />
             <span>NVIDIA Nemotron 3 Ultra 550B</span>
-          </div>
-
-          <div style={{
-            display: "none",
-            alignItems: "center",
-            gap: "6px",
-            fontSize: "0.72rem",
-            color: "var(--text-muted)",
-            fontFamily: "var(--font-geist-mono), 'JetBrains Mono', monospace"
-          }}>
-            <Clock size={12} />
-            <span>03:00 AM Cron ({timeUntilSleep})</span>
           </div>
         </div>
       </div>

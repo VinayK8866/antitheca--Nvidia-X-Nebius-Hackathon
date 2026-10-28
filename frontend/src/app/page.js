@@ -11,7 +11,7 @@ import ConsoleView from "../components/ConsoleView";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("replay");
+  const [activeTab, setActiveTab] = useState("overview");
   const [systemStatus, setSystemStatus] = useState(null);
   const [briefing, setBriefing] = useState(null);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
@@ -50,7 +50,7 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get("tab");
-      if (tabParam && ["replay", "graph", "challenges", "console"].includes(tabParam)) {
+      if (tabParam && ["overview", "replay", "graph", "challenges", "console"].includes(tabParam)) {
         setActiveTab(tabParam);
       }
     }
@@ -221,15 +221,16 @@ export default function Home() {
         isReplaying={isReplaying}
       />
 
-      <EngramHero
-        systemStatus={systemStatus}
-        schedulerStatus={schedulerStatus}
-        onTriggerReplay={handleTriggerReplay}
-        isReplaying={isReplaying}
-        setActiveTab={handleTabChange}
-      />
-
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        {activeTab === "overview" && (
+          <EngramHero
+            systemStatus={systemStatus}
+            schedulerStatus={schedulerStatus}
+            onTriggerReplay={handleTriggerReplay}
+            isReplaying={isReplaying}
+            setActiveTab={handleTabChange}
+          />
+        )}
         {activeTab === "replay" && (
           <DailyBriefingView
             briefing={briefing}
