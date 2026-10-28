@@ -235,8 +235,11 @@ export default function KnowledgeGraphView({ graphData }) {
 
   // Custom 2D Canvas Object: Bioluminescent Cybernetic Beads
   const drawNodeCanvas = useCallback((node, ctx, globalScale) => {
+    if (!node || !Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
+    const safeScale = Number.isFinite(globalScale) && globalScale > 0 ? globalScale : 1;
+
     const degree = nodeDegrees[node.id] || 0;
-    const baseRadius = 3.2 + Math.min(Math.sqrt(degree) * 1.6, 5.5);
+    const baseRadius = Math.max(2, 3.2 + Math.min(Math.sqrt(degree) * 1.6, 5.5));
     const color = getNodeColor(node);
 
     const isHovered = hoveredNode?.id === node.id;
@@ -261,32 +264,39 @@ export default function KnowledgeGraphView({ graphData }) {
     }
 
     // 1. Outer Glow Aura (Radial Blur)
+    const innerR = Math.max(0.1, baseRadius * 0.4);
     const glowRadius = isPrimary ? baseRadius + 7 : baseRadius + 3;
-    const glowGrad = ctx.createRadialGradient(node.x, node.y, baseRadius * 0.5, node.x, node.y, glowRadius);
-    glowGrad.addColorStop(0, color + (isPrimary ? "88" : "33"));
-    glowGrad.addColorStop(1, color + "00");
-    ctx.fillStyle = glowGrad;
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, glowRadius, 0, 2 * Math.PI);
-    ctx.fill();
+    if (Number.isFinite(innerR) && Number.isFinite(glowRadius) && glowRadius > innerR) {
+      try {
+        const glowGrad = ctx.createRadialGradient(node.x, node.y, innerR, node.x, node.y, glowRadius);
+        glowGrad.addColorStop(0, color + (isPrimary ? "88" : "33"));
+        glowGrad.addColorStop(1, color + "00");
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, glowRadius, 0, 2 * Math.PI);
+        ctx.fill();
+      } catch {
+        // Fallback safely if gradient creation fails
+      }
+    }
 
     // 2. Active Radar Rings on Hover/Select
     if (isPrimary) {
       ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5 / globalScale;
+      ctx.lineWidth = 1.5 / safeScale;
       ctx.beginPath();
       ctx.arc(node.x, node.y, baseRadius + 4.5, 0, 2 * Math.PI);
       ctx.stroke();
 
       // Outer ripple
       ctx.strokeStyle = color + "55";
-      ctx.lineWidth = 0.8 / globalScale;
+      ctx.lineWidth = 0.8 / safeScale;
       ctx.beginPath();
       ctx.arc(node.x, node.y, baseRadius + 8, 0, 2 * Math.PI);
       ctx.stroke();
     } else if (isNeighbor) {
       ctx.strokeStyle = color + "88";
-      ctx.lineWidth = 1.0 / globalScale;
+      ctx.lineWidth = 1.0 / safeScale;
       ctx.beginPath();
       ctx.arc(node.x, node.y, baseRadius + 2.5, 0, 2 * Math.PI);
       ctx.stroke();
@@ -668,6 +678,7 @@ export default function KnowledgeGraphView({ graphData }) {
           nodeCanvasObject={drawNodeCanvas}
           nodeCanvasObjectMode={() => "replace"}
           nodePointerAreaPaint={(node, color, ctx) => {
+            if (!node || !Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
             const degree = nodeDegrees[node.id] || 0;
             const r = 3.2 + Math.min(Math.sqrt(degree) * 1.6, 5.5) + 6;
             ctx.fillStyle = color;
