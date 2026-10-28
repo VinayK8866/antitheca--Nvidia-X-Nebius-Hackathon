@@ -35,6 +35,7 @@ export default function KnowledgeGraphView({ graphData }) {
 
   const containerRef = useRef(null);
   const fgRef = useRef(null);
+  const hasInitialFitRef = useRef(false);
 
   // Resize and theme observation
   useEffect(() => {
@@ -128,18 +129,30 @@ export default function KnowledgeGraphView({ graphData }) {
   // Configure physics forces on graph instance
   useEffect(() => {
     if (fgRef.current) {
-      // High damping for calm, settled Obsidian physics
-      fgRef.current.d3VelocityDecay(0.42);
+      // Calibrated Obsidian physics: strong charge repulsion + wide link distance
+      fgRef.current.d3VelocityDecay(0.32);
       
       const chargeForce = fgRef.current.d3Force("charge");
       if (chargeForce) {
-        chargeForce.strength(-110);
+        chargeForce.strength(-480);
+        chargeForce.distanceMax(600);
       }
       const linkForce = fgRef.current.d3Force("link");
       if (linkForce) {
-        linkForce.distance((link) => (link.relation === "tagged" ? 36 : 64));
+        linkForce.distance((link) => (link.relation === "tagged" ? 90 : 135));
+        linkForce.strength(0.65);
       }
     }
+  }, [activeGraph]);
+
+  // Auto zoom-to-fit after simulation settles into organic layout
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (fgRef.current) {
+        fgRef.current.zoomToFit(500, 75);
+      }
+    }, 650);
+    return () => clearTimeout(timer);
   }, [activeGraph]);
 
   // Category palette (Obsidian minimalist scheme)
@@ -215,13 +228,15 @@ export default function KnowledgeGraphView({ graphData }) {
     }
 
     // -------------------------------------------------------------------------
-    // 4. LABELS: READABLE OBSIDIAN LANDMARKS
-    // When focus is active: only show primary and direct neighbors.
-    // In ambient view: show readable labels for all indexed knowledge atoms.
+    // 4. LABELS: CLEAN OBSIDIAN HIERARCHY (NO OVERLAP CLUTTER)
+    // - When a node is hovered/selected: Spotlights that node + its 1-hop connections
+    // - In ambient view: Only show landmark hubs (ADRs, decisions, degree >= 3)
+    // - When user zooms in close (globalScale > 1.5): More labels gracefully reveal
     // -------------------------------------------------------------------------
+    const isLandmark = node.type === "decision" || degree >= 3 || node.type === "paradox";
     const shouldDrawLabel = activeFocus
       ? (isPrimary || isNeighbor)
-      : (globalScale >= 0.6 || degree >= 1 || isPrimary);
+      : (isLandmark || globalScale > 1.5);
 
     if (shouldDrawLabel) {
       const rawLabel = node.name || node.id;
@@ -477,6 +492,12 @@ export default function KnowledgeGraphView({ graphData }) {
           }}
           onZoom={(transform) => {
             setCurrentZoom(transform.k);
+          }}
+          onEngineStop={() => {
+            if (fgRef.current && !hasInitialFitRef.current) {
+              fgRef.current.zoomToFit(600, 75);
+              hasInitialFitRef.current = true;
+            }
           }}
           cooldownTicks={160}
           warmupTicks={60}
