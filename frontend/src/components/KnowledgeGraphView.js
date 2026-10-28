@@ -215,13 +215,13 @@ export default function KnowledgeGraphView({ graphData }) {
     }
 
     // -------------------------------------------------------------------------
-    // 4. LABELS: ZERO CLUTTER BY DEFAULT
-    // Labels only render if:
-    // a) Node is hovered or selected
-    // b) Node is a direct 1-hop neighbor of hovered/selected node
-    // c) Camera is zoomed in close (globalScale > 2.0) for landmark hub nodes
+    // 4. LABELS: READABLE OBSIDIAN LANDMARKS
+    // When focus is active: only show primary and direct neighbors.
+    // In ambient view: show readable labels for all indexed knowledge atoms.
     // -------------------------------------------------------------------------
-    const shouldDrawLabel = isPrimary || isNeighbor || (globalScale > 2.1 && degree >= 2);
+    const shouldDrawLabel = activeFocus
+      ? (isPrimary || isNeighbor)
+      : (globalScale >= 0.6 || degree >= 1 || isPrimary);
 
     if (shouldDrawLabel) {
       const rawLabel = node.name || node.id;
