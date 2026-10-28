@@ -649,24 +649,22 @@ export default function KnowledgeGraphView({ graphData }) {
           height: `${dimensions.height}px`,
           borderRadius: "12px",
           overflow: "hidden",
-          border: "1px solid var(--border-strong)",
-          background: isDark
-            ? "radial-gradient(circle at 50% 50%, #0d111a 0%, #06080d 100%)"
-            : "radial-gradient(circle at 50% 50%, #f8fafc 0%, #edf2f7 100%)",
-          boxShadow: "inset 0 0 80px rgba(0,0,0,0.5), 0 8px 30px rgba(0,0,0,0.25)"
+          border: "1px solid var(--border-hairline)",
+          background: isDark ? "#09090b" : "#ffffff",
+          boxShadow: isDark ? "0 8px 30px rgba(0,0,0,0.35)" : "var(--shadow-card)"
         }}
       >
-        {/* Subtle Cybernetic Dot Grid Background */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: isDark
-            ? "radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px)"
-            : "radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          pointerEvents: "none",
-          opacity: 0.7
-        }} />
+        {/* Subtle Cybernetic Dot Grid Background in Dark Mode Only */}
+        {isDark && (
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+            pointerEvents: "none",
+            opacity: 0.7
+          }} />
+        )}
 
         {/* ForceGraph2D Canvas */}
         <ForceGraph2D
