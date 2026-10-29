@@ -144,7 +144,10 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, content, modality })
     });
-    if (!resp.ok) throw new Error("Ingest failed");
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      throw new Error(errData.detail || (resp.status === 502 ? "Backend unavailable (502 Bad Gateway)" : `Ingest failed (HTTP ${resp.status})`));
+    }
     const result = await resp.json();
     await refreshAll();
     return result;
@@ -156,7 +159,10 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url })
     });
-    if (!resp.ok) throw new Error("URL ingest failed");
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      throw new Error(errData.detail || (resp.status === 502 ? "Backend unavailable (502 Bad Gateway)" : `URL ingest failed (HTTP ${resp.status})`));
+    }
     const result = await resp.json();
     await refreshAll();
     return result;
@@ -169,7 +175,10 @@ export default function Home() {
       method: "POST",
       body: formData
     });
-    if (!resp.ok) throw new Error("File upload failed");
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      throw new Error(errData.detail || (resp.status === 502 ? "Backend unavailable (502 Bad Gateway)" : `File upload failed (HTTP ${resp.status})`));
+    }
     const result = await resp.json();
     await refreshAll();
     return result;
@@ -183,7 +192,8 @@ export default function Home() {
     });
     if (!resp.ok) {
       const errData = await resp.json().catch(() => ({}));
-      throw new Error(errData.detail || "Folder ingestion failed");
+      const reason = errData.detail || (resp.status === 502 ? "Backend unavailable (502 Bad Gateway / Render container OOM)" : `Server error (HTTP ${resp.status})`);
+      throw new Error(reason);
     }
     const result = await resp.json();
     await refreshAll();
