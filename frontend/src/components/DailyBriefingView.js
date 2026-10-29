@@ -3,6 +3,272 @@
 import { useState } from "react";
 import { Sparkles, Moon, ArrowRight, Globe, RefreshCw, Clock, History, CheckCircle2, Send, Bell, ExternalLink, AlertCircle, Zap, ShieldAlert } from "lucide-react";
 
+// Zero-dependency rich renderer for Daily Executive Synthesis
+function renderMarkdownBriefing(mdText) {
+  if (!mdText) return null;
+
+  const lines = mdText.split("\n");
+  const blocks = [];
+  let currentTable = null;
+  let currentParagraph = [];
+
+  const flushParagraph = () => {
+    if (currentParagraph.length > 0) {
+      const text = currentParagraph.join(" ");
+      blocks.push({ type: "p", content: text });
+      currentParagraph = [];
+    }
+  };
+
+  const flushTable = () => {
+    if (currentTable) {
+      blocks.push({ type: "table", content: currentTable });
+      currentTable = null;
+    }
+  };
+
+  const parseInline = (text) => {
+    if (!text) return "";
+    // Parse [[wikilinks]]
+    const parts = [];
+    const regex = /\[\[([^\]]+)\]\]|\*\*([^*]+)\*\*|`([^`]+)`/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+
+      if (match[1]) {
+        // [[wikilink]]
+        parts.push(
+          <span
+            key={match.index}
+            style={{
+              padding: "1px 6px",
+              borderRadius: "4px",
+              background: "var(--bg-subtle)",
+              border: "1px solid var(--border-hairline)",
+              color: "var(--cyan-tavily)",
+              fontSize: "0.85em",
+              fontFamily: "var(--font-geist-mono), monospace",
+              fontWeight: "600",
+              margin: "0 2px"
+            }}
+          >
+            [[{match[1]}]]
+          </span>
+        );
+      } else if (match[2]) {
+        // **bold**
+        parts.push(
+          <strong key={match.index} style={{ color: "var(--text-primary)", fontWeight: "600" }}>
+            {match[2]}
+          </strong>
+        );
+      } else if (match[3]) {
+        // `code`
+        parts.push(
+          <code
+            key={match.index}
+            style={{
+              padding: "2px 5px",
+              borderRadius: "4px",
+              background: "var(--bg-subtle)",
+              fontFamily: "var(--font-geist-mono), monospace",
+              fontSize: "0.85em",
+              color: "var(--text-primary)"
+            }}
+          >
+            {match[3]}
+          </code>
+        );
+      }
+
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : text;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    if (line.startsWith("|") && line.endsWith("|")) {
+      flushParagraph();
+      // Table line
+      const cells = line.split("|").slice(1, -1).map(c => c.trim());
+      if (line.includes("---")) {
+        // Divider row, skip
+        continue;
+      }
+      if (!currentTable) {
+        currentTable = { headers: cells, rows: [] };
+      } else {
+        currentTable.rows.push(cells);
+      }
+      continue;
+    } else {
+      flushTable();
+    }
+
+    if (!line) {
+      flushParagraph();
+      continue;
+    }
+
+    if (line.startsWith("### ")) {
+      flushParagraph();
+      blocks.push({ type: "h3", content: line.replace("### ", "").trim() });
+    } else if (line.startsWith("## ")) {
+      flushParagraph();
+      blocks.push({ type: "h2", content: line.replace("## ", "").trim() });
+    } else if (line.startsWith("# ")) {
+      flushParagraph();
+      blocks.push({ type: "h1", content: line.replace("# ", "").trim() });
+    } else if (line === "---") {
+      flushParagraph();
+      blocks.push({ type: "divider" });
+    } else if (line.startsWith("- ") || line.startsWith("* ")) {
+      flushParagraph();
+      blocks.push({ type: "bullet", content: line.substring(2).trim() });
+    } else if (/^\d+\.\s/.test(line)) {
+      flushParagraph();
+      blocks.push({ type: "numbered", content: line.replace(/^\d+\.\s*/, "").trim() });
+    } else {
+      currentParagraph.push(line);
+    }
+  }
+
+  flushParagraph();
+  flushTable();
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      {blocks.map((b, idx) => {
+        if (b.type === "h1") {
+          return (
+            <h1 key={idx} style={{ fontSize: "1.4rem", fontWeight: "700", color: "var(--text-primary)", margin: "8px 0 4px" }}>
+              {parseInline(b.content)}
+            </h1>
+          );
+        }
+        if (b.type === "h2") {
+          return (
+            <h2 key={idx} style={{ fontSize: "1.2rem", fontWeight: "700", color: "var(--text-primary)", margin: "12px 0 6px" }}>
+              {parseInline(b.content)}
+            </h2>
+          );
+        }
+        if (b.type === "h3") {
+          return (
+            <div key={idx} style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginTop: "16px",
+              marginBottom: "4px",
+              paddingBottom: "6px",
+              borderBottom: "1px solid var(--border-hairline)"
+            }}>
+              <span style={{
+                width: "4px",
+                height: "16px",
+                borderRadius: "2px",
+                background: "var(--emerald-wisdom)"
+              }} />
+              <h3 style={{ fontSize: "1.02rem", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
+                {parseInline(b.content)}
+              </h3>
+            </div>
+          );
+        }
+        if (b.type === "divider") {
+          return <div key={idx} style={{ height: "1px", background: "var(--border-hairline)", margin: "8px 0" }} />;
+        }
+        if (b.type === "bullet") {
+          return (
+            <div key={idx} style={{
+              display: "flex",
+              gap: "10px",
+              padding: "10px 14px",
+              borderRadius: "7px",
+              background: "var(--bg-subtle)",
+              border: "1px solid var(--border-hairline)",
+              fontSize: "0.9rem",
+              lineHeight: "1.6",
+              color: "var(--text-secondary)"
+            }}>
+              <span style={{ color: "var(--emerald-wisdom)", fontWeight: "700" }}>•</span>
+              <div style={{ flex: 1 }}>{parseInline(b.content)}</div>
+            </div>
+          );
+        }
+        if (b.type === "numbered") {
+          return (
+            <div key={idx} style={{
+              display: "flex",
+              gap: "10px",
+              padding: "10px 14px",
+              borderRadius: "7px",
+              background: "var(--bg-subtle)",
+              border: "1px solid var(--border-hairline)",
+              fontSize: "0.9rem",
+              lineHeight: "1.6",
+              color: "var(--text-secondary)"
+            }}>
+              <span style={{ color: "var(--cyan-tavily)", fontWeight: "700", fontFamily: "var(--font-geist-mono), monospace" }}>→</span>
+              <div style={{ flex: 1 }}>{parseInline(b.content)}</div>
+            </div>
+          );
+        }
+        if (b.type === "table") {
+          const { headers, rows } = b.content;
+          return (
+            <div key={idx} style={{ overflowX: "auto", margin: "10px 0", borderRadius: "8px", border: "1px solid var(--border-hairline)" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", textAlign: "left" }}>
+                <thead>
+                  <tr style={{ background: "var(--bg-subtle)", borderBottom: "1px solid var(--border-hairline)" }}>
+                    {headers.map((h, hIdx) => (
+                      <th key={hIdx} style={{ padding: "9px 12px", fontWeight: "600", color: "var(--text-primary)" }}>
+                        {parseInline(h)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, rIdx) => (
+                    <tr key={rIdx} style={{
+                      borderBottom: rIdx === rows.length - 1 ? "none" : "1px solid var(--border-hairline)",
+                      background: rIdx % 2 === 0 ? "transparent" : "var(--bg-subtle)"
+                    }}>
+                      {r.map((cell, cIdx) => (
+                        <td key={cIdx} style={{ padding: "9px 12px", color: "var(--text-secondary)" }}>
+                          {parseInline(cell)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+        return (
+          <p key={idx} style={{ fontSize: "0.93rem", lineHeight: "1.7", color: "var(--text-secondary)", margin: 0 }}>
+            {parseInline(b.content)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function DailyBriefingView({ briefing, onTriggerReplay, isReplaying, schedulerStatus, onSimulateSchedule, onTestDispatch }) {
   const isCronActive = schedulerStatus?.is_enabled ?? true;
   const timeUntilSleep = schedulerStatus?.time_until_sleep_cycle || "12h 4m";
@@ -285,14 +551,8 @@ export default function DailyBriefingView({ briefing, onTriggerReplay, isReplayi
         </div>
 
         {briefing?.summary_markdown ? (
-          <div style={{
-            fontSize: "0.96rem",
-            color: "var(--text-secondary)",
-            whiteSpace: "pre-wrap",
-            lineHeight: "1.75",
-            fontFamily: "var(--font-geist-sans), 'Inter', sans-serif"
-          }}>
-            {briefing.summary_markdown}
+          <div>
+            {renderMarkdownBriefing(briefing.summary_markdown)}
           </div>
         ) : (
           <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--text-tertiary)" }}>

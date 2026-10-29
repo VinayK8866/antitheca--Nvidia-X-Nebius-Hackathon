@@ -234,7 +234,12 @@ export default function ConsoleView({ onQuery, onIngestText, onIngestUrl, onInge
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setIngestType(item.id)}
+                onClick={() => {
+                  if (ingestType !== item.id) {
+                    setIngestType(item.id);
+                    setIngestStatus(null);
+                  }
+                }}
                 style={{
                   flex: 1,
                   display: "flex",
